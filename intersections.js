@@ -89,18 +89,26 @@ var colors = ["#bb7051",
 	}
 	
 	
- Promise.all([d3.json("intersections_2.json")])
+ Promise.all([d3.json("intersections_2.json"),d3.csv("Adeline/02_Exports/boundaryIntersections.csv")])
  .then(function(data){
-	   var map = drawMap(data[0])
+	   var map = drawMap(data[0],data[1])
 })
 //click layer
 //show a layer
 //
 
 
-function drawMap(intersections){
+function drawMap(intersections,newInter){
 //	console.log(intersections)
 	//console.log("map")
+	console.log(newInter)
+	for(var i in newInter){
+		var layers = newInter[i].fileName.replace(".geojson","")
+		var l1 = layers.split("-")[0]
+		var l2 = layers.split("-")[1]
+		var id1 = newInter[i].ID1
+		var id2 = newInter[i].ID2
+	}
     d3.select("#map").style("width",window.innerWidth+"px")
           .style("height",window.innerHeight+"px")
     mapboxgl.accessToken = "pk.eyJ1IjoiampqaWlhMTIzIiwiYSI6ImNpbDQ0Z2s1OTN1N3R1eWtzNTVrd29lMDIifQ.gSWjNbBSpIFzDXU2X5YCiQ"
@@ -249,7 +257,6 @@ function drawMap(intersections){
 			//console.log(feature)
 			 d3.selectAll(".shared").remove()
 			 d3.selectAll(".bars").style("border","none")
-			
 
  			var layerName = c.features[0].layer.id
 			var filterKey = layerUniqueIds[layerName]
@@ -262,7 +269,6 @@ function drawMap(intersections){
 
 			d3.select("#"+layerName+"_text").html(layerName
 				+"<br><span style=\"font-size:20px\"><strong>"+filterValue+"</strong></span>")
-			d3.selectAll("#layerName")
 				
 	   		 map.setPaintProperty(layerName+"_hover",'fill-opacity',.3);
  			map.setFilter(layerName+"_hover",["==",filterKey,filterValue])
@@ -280,6 +286,3 @@ function drawMap(intersections){
       return map
 }
 
-function addPolygon(layerName,filterKey,filterValue){
-	
-}
