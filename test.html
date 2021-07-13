@@ -12,17 +12,20 @@ body { margin: 0; padding: 0; }
 </style>
 </head>
 <body>
-<div id="map"></div>
+<div id="map">test</div>
 <script>
-	mapboxgl.accessToken = 'pk.eyJ1IjoiampqaWlhMTIzIiwiYSI6ImNpbDQ0Z2s1OTN1N3R1eWtzNTVrd29lMDIifQ.gSWjNbBSpIFzDXU2X5YCiQ';
-	
+	mapboxgl.accessToken = //'pk.eyJ1IjoiYzRzci1nc2FwcCIsImEiOiJja2J0ajRtNzMwOHBnMnNvNnM3Ymw5MnJzIn0.fsTNczOFZG8Ik3EtO9LdNQ';
+	"pk.eyJ1IjoiampqaWlhMTIzIiwiYSI6ImNpbDQ0Z2s1OTN1N3R1eWtzNTVrd29lMDIifQ.gSWjNbBSpIFzDXU2X5YCiQ";
     var map = new mapboxgl.Map({
         container: 'map', // container id
-		style:"mapbox://styles/jjjiia123/cknrw1rqq13pr17o3te0tnhqi",
-       // style: 'mapbox://styles/mapbox/streets-v11', // style URL
+		style:"mapbox://styles/jjjiia123/ckm127tll10f617o1ybzjipxh",
+		
+        //style: 'mapbox://styles/mapbox/streets-v11', // style URL
         center: [-74.5, 40], // starting position [lng, lat]
         zoom: 4 // starting zoom
     });
+	map.resize();
+	
 </script>
 
 </body>
