@@ -1,5 +1,6 @@
 
 var map;
+var highlightColor = "#fa6614"
 var clicked = false
 var currentAdmins = {}
 // var files = [// "block.geojson",
@@ -27,6 +28,20 @@ var currentAdmins = {}
 		//"schoolDistrict",
 		"fireDivision"
 	]
+	var tempwords = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean urna erat, dictum vitae metus eu, vehicula consectetur tortor. Maecenas fermentum."
+	var layerDefinition = {
+		borough:"There are 5 boroughs in NYC",
+		zipcode:"There are 145 zipcodes",
+		policePrecinct:"There are 77 precincts ine NYC",
+		congressionalDistrict:tempwords,
+		stateAssemblyDistrict:tempwords,
+		stateSenate:tempwords,
+		tract:tempwords,
+		schoolDistrict:tempwords,
+		cityCouncil:tempwords,
+		fireDivision:tempwords
+	}
+	
 	var layersHover = [
 		//"borough",
 		//"zipcode_hover",
@@ -260,8 +275,9 @@ function drawMap(intersections,newInter,geoTest){
 			marker.setLngLat([e.lngLat.lng,e.lngLat.lat])
 			.addTo(map);
 			d3.select("#presentLocation")
-				.html("CLICKED LOCATION:<br> "+Math.round(e.lngLat.lng*10000)/10000
-					+", "+Math.round(e.lngLat.lat*10000)/10000)
+				.html("<span class=\"highlight\">The clicked location </span><br> "+Math.round(e.lngLat.lng*10000)/10000
+					+", "+Math.round(e.lngLat.lat*10000)/10000
+					+"<br><span class=\"highlight\">is in:</span> ")
 
 			//console.log(marker)
 	})
@@ -355,12 +371,15 @@ function drawMap(intersections,newInter,geoTest){
 			// console.log("geo")
 			//console.log(result)
 			
-			d3.select("#presentLocation").html("ADDRESS:<br>"+result.result["place_name"])
+			d3.select("#presentLocation")
+				.html("<span class=\"highlight\">The address</span><br>"
+					+result.result["place_name"]
+					+"<br><span class=\"highlight\"> is in</span>")
 			
  			if(result!=null){
 				var center = result.result.center
 				var marker = new mapboxgl.Marker({
-					color:"#fa6614"
+					color:highlightColor
 				})
 				marker.setLngLat(center)
 					.addTo(map);
@@ -382,7 +401,7 @@ function drawList(features,dict){
 		d3.select("#info")
 			.append("div")
 			.attr("id","list")
-			.style("margin-top","30px")
+			//.style("margin-top","20px")
 	
 	for(var i in features){
 		//console.log(features[i])
@@ -397,14 +416,23 @@ function drawList(features,dict){
 		console.log(key)
 		console.log(dict[key])
 		
-		d3.select("#list")
+		var row = d3.select("#list")
 			.append("div")
+			.attr("id","row")
+		
+		
+		row.append("div").attr("class","listSubtitle")	
 			.html(layerDisplayName+": "+value)
-			.style("color",colors[i])
+			.style("color",colors[layerName])
+			//.style("color","#fff")
 			.style("padding","5px")
-			.style("margin","5px")
-			.style("border","1px solid "+colors[layerName])
-	
+			.style("cursor","pointer")
+			//.style("border","1px solid "+colors[layerName])
+		row.append("div").attr("class","listText")
+			.html(layerDefinition[layerName])
+			.style("padding","5px")
+			.style("padding-bottom","10px")
+		
 	}
 
 }

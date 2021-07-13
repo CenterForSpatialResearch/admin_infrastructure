@@ -84,14 +84,29 @@
 			visibility:hidden;
 		}
 		#presentLocation{
-			width:150px;
+		/*	width:150px;*/
 /*			height:30px;
 			border:1px solid black;
-*/			position:fixed;
+*/		/*	position:fixed;
 			left:320px;
-			top:10px;
+			top:10px;*/
 			padding:5px;
+			padding-top:20px;
+		}
+		.highlight{
+			/*color:#fa6614;
+*/font-weight:600;
+			font-size:14px;
+		}
+		.listSubtitle{
+			font-size:14px;
+			font-weight:600;
+		}
+		.listText{
 			font-size:10px;
+			font-style:italic;
+			font-weight:100;
+			line-height:110%;
 		}
     </style>
 
@@ -101,7 +116,6 @@
 
 <div id="map"></div>
 
-<div id="presentLocation"></div>
 <div id="info">
 	<div id="infoTitle">
 		Administrative Infrastructure
@@ -109,6 +123,7 @@
 	Click anywhere on map or enter an address to see administrative boundaries.
 	<br><br>	
 	<div id="geocoder"></div>
+	<div id="presentLocation"></div>
 	<!-- <div id="key">
 		Click on one of the layers below to see details
 	</div> -->
