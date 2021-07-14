@@ -71,7 +71,7 @@ var currentAdmins = {}
 		zipcode:"Zipcode",
 		policePrecinct:"Police Precinct",
 		congressionalDistrict:"Congressional District",
-		stateAssemblyDistrict:"State Assemmbly District",
+		stateAssemblyDistrict:"State Assembly District",
 		stateSenate:"State Senate District",
 		tract:"Census Tract",
 		schoolDistrict:"School District",
@@ -79,40 +79,10 @@ var currentAdmins = {}
 		fireDivision:"Fire Division"
 	}
 	
-	var promises = []
-    for(var i in layers){
-    	promises.push(d3.json(root+layers[i]+".geojson"))
-    }	
-//  var colors = ["#6ee14e",
-// "#cfeb47",
-// "#96b831",
-// "#dfc239",
-// "#41cde2",
-// "#67e9b7",
-// "#a7e384",
-// "#5eb47f",
-// "#dedb85"]
-	// ["#e76d77",
-// "#75dc51",
-// "#6b8de9",
-// "#d3d141",
-// "#3ec0e4",
-// "#e97039",
-// "#5be3b9",
-// "#cca14d",
-// "#72bc7b",
-// "#89b750"]
-
-	// ["#bb7051",
-//  "#7b62cc",
-//  "#78b642",
-//  "#c163b9",
-//  "#50b189",
-//  "#d24c3c",
-//  "#688dcd",
-//  "#cd9c3f",
-//  "#c85782",
-//  "#73843b"]
+	// var promises = []
+//     for(var i in layers){
+//     	promises.push(d3.json(root+layers[i]+".geojson"))
+//     }
 	
  var colors = {
  	borough:"#6ee14e",
@@ -127,7 +97,7 @@ var currentAdmins = {}
  	fireDivision:"#dedb85"
 
  }
-	
+var layerSizes = {}
 	
 	console.log(window.innerWidth)
 	d3.select("#map").style("width",(window.innerWidth-270)+"px")
@@ -141,7 +111,14 @@ var currentAdmins = {}
 
 
 function drawMap(intersections,newInter,geoTest){
-//	console.log(intersections)
+	
+	console.log(intersections)
+	
+	for(var j in intersections){
+		console.log(intersections[j])
+		layerSizes[j]=Object.keys(intersections[j]).length
+	}
+	console.log(layerSizes)
 	//console.log("map")
 	//console.log(newInter)
 	
@@ -275,9 +252,9 @@ function drawMap(intersections,newInter,geoTest){
 			marker.setLngLat([e.lngLat.lng,e.lngLat.lat])
 			.addTo(map);
 			d3.select("#presentLocation")
-				.html("<span class=\"highlight\">The clicked location </span><br> "+Math.round(e.lngLat.lng*10000)/10000
+				.html("<span class=\"highlight\">The clicked location </span> "+Math.round(e.lngLat.lng*10000)/10000
 					+", "+Math.round(e.lngLat.lat*10000)/10000
-					+"<br><span class=\"highlight\">is in:</span> ")
+					+" <span class=\"highlight\">is in:</span> ")
 
 			//console.log(marker)
 	})
@@ -372,9 +349,9 @@ function drawMap(intersections,newInter,geoTest){
 			//console.log(result)
 			
 			d3.select("#presentLocation")
-				.html("<span class=\"highlight\">The address</span><br>"
+				.html("<span class=\"highlight\">The address </span>"
 					+result.result["place_name"]
-					+"<br><span class=\"highlight\"> is in</span>")
+					+"<span class=\"highlight\"> is in</span>")
 			
  			if(result!=null){
 				var center = result.result.center
@@ -413,8 +390,17 @@ function drawList(features,dict){
 		var capLayerName = layerName[0].toUpperCase()+layerName.substring(1)
 		
 		var key = capLayerName+"_"+value
-		console.log(key)
-		console.log(dict[key])
+		var intersections = dict[key]
+		var intersectionsText = ""
+		for(var l in intersections){
+			console.log(l)
+			var formattedL = l[0].toLowerCase()+l.substring(1)
+			if(intersections[l].length>1){
+				intersectionsText+= intersections[l].length+" "+ layerLabel[formattedL]+"s<br>"	
+			}else{
+				intersectionsText+= intersections[l].length+" "+ layerLabel[formattedL]+"<br>"
+			}
+		}
 		
 		var row = d3.select("#list")
 			.append("div")
@@ -422,15 +408,22 @@ function drawList(features,dict){
 		
 		
 		row.append("div").attr("class","listSubtitle")	
-			.html(layerDisplayName+": "+value)
+			.html(layerDisplayName+" "+value)
 			.style("color",colors[layerName])
 			//.style("color","#fff")
-			.style("padding","5px")
+			.style("padding-left","5px")
 			.style("cursor","pointer")
 			//.style("border","1px solid "+colors[layerName])
 		row.append("div").attr("class","listText")
-			.html(layerDefinition[layerName])
-			.style("padding","5px")
+		
+			.html(
+				// "There are <strong>"+layerSizes[layerName]+" "+ layerDisplayName.toLowerCase()
+// 				+"s</strong> in New York City. <br><strong>"+
+		
+				//layerDisplayName+" "+value+"</strong> "
+				"<strong>intersects with </strong>"+intersectionsText
+			)
+			.style("padding-left","5px")
 			.style("padding-bottom","10px")
 		
 	}
