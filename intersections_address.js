@@ -304,7 +304,7 @@ function drawMap(intersections,newInter,geoTest){
 	 		}
 		
 			if(layers.indexOf(layerName)==layers.length-1){
-				drawList(clickedFeatures,dict)
+				drawList(clickedFeatures,dict,map)
 			
 			}
 
@@ -349,9 +349,9 @@ function drawMap(intersections,newInter,geoTest){
 			//console.log(result)
 			
 			d3.select("#presentLocation")
-				.html("<span class=\"highlight\">The address </span>"
+				.html("The address"
 					+result.result["place_name"]
-					+"<span class=\"highlight\"> is in</span>")
+					+" is in")
 			
  			if(result!=null){
 				var center = result.result.center
@@ -364,7 +364,7 @@ function drawMap(intersections,newInter,geoTest){
  				var coords = result.result.geometry.coordinates
  				var features = map.queryRenderedFeatures(map.project(coords), {layers:layersHover})
  				filterOnResult(map,features)
-				drawList(features,dict)
+				drawList(features,dict,map)
  			}
 
  		});
@@ -372,7 +372,7 @@ function drawMap(intersections,newInter,geoTest){
        return map
 		 })
 }
-function drawList(features,dict){
+function drawList(features,dict,map){
 	//console.log(features)
 	d3.select("#list").remove()
 		d3.select("#info")
@@ -393,7 +393,7 @@ function drawList(features,dict){
 		var intersections = dict[key]
 		var intersectionsText = ""
 		for(var l in intersections){
-			console.log(l)
+			//console.log(l)
 			var formattedL = l[0].toLowerCase()+l.substring(1)
 			if(intersections[l].length>1){
 				intersectionsText+= intersections[l].length+" "+ layerLabel[formattedL]+"s<br>"	
@@ -413,6 +413,22 @@ function drawList(features,dict){
 			//.style("color","#fff")
 			.style("padding-left","5px")
 			.style("cursor","pointer")
+			.attr("id",layerName+"_"+value+"_"+keyName)
+			.on("mouseover",function(){
+				var id = d3.select(this).attr("id")
+				var layer = id.split("_")[0]
+				var value = id.split("_")[1]
+				var key = id.split("_")[2]
+				console.log([layer,value])
+				map.setPaintProperty(layer,"fill-opacity",1)
+			})
+			.on("mouseout",function(){
+				var id = d3.select(this).attr("id")
+				var layer = id.split("_")[0]
+				var value = id.split("_")[1]
+				var key = id.split("_")[2]
+				map.setPaintProperty(layer,"fill-opacity",.1)
+			})
 			//.style("border","1px solid "+colors[layerName])
 		row.append("div").attr("class","listText")
 		
@@ -421,7 +437,7 @@ function drawList(features,dict){
 // 				+"s</strong> in New York City. <br><strong>"+
 		
 				//layerDisplayName+" "+value+"</strong> "
-				"<strong>intersects with </strong>"+intersectionsText
+				"intersects with "+intersectionsText
 			)
 			.style("padding-left","5px")
 			.style("padding-bottom","10px")
