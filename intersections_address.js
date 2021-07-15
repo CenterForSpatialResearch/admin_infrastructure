@@ -85,16 +85,16 @@ var currentAdmins = {}
 //     }
 	
  var colors = {
- 	borough:"#6ee14e",
+ 	borough:"#5462c9",
  	zipcode:"#cfeb47",
- 	policePrecinct:"#96b831",
- 	congressionalDistrict:"#dfc239",
+ 	policePrecinct:"#4ca22f",
+ 	congressionalDistrict:"#362fa4",
  	stateAssemblyDistrict:"#41cde2",
- 	stateSenate:"#67e9b7",
+ 	stateSenate:"#3b40a5",
  	//tract:"#688dcd",
- 	schoolDistrict:"#a7e384",
+ 	schoolDistrict:"#9ca929",
  	cityCouncil:"#5eb47f",
- 	fireDivision:"#dedb85"
+ 	fireDivision:"#314ca3"
 
  }
 var layerSizes = {}
@@ -405,33 +405,75 @@ function drawList(features,dict,map){
 		var row = d3.select("#list")
 			.append("div")
 			.attr("id","row")
+			.style("margin-bottom","10px")
 		
 		
 		row.append("div").attr("class","listSubtitle")	
 			.html(layerDisplayName+" "+value)
-			.style("color",colors[layerName])
+			.style("background-color",colors[layerName])
+			.style("color","#fff")
 			//.style("color","#fff")
-			.style("padding-left","5px")
+			.style("padding","5px")
 			.style("cursor","pointer")
-			.attr("id",layerName+"_"+value+"_"+keyName)
+			.attr("id",layerName+"_subtitle")//+"_"+value+"_"+keyName)
+			.attr("oc","c")
 			.on("mouseover",function(){
 				var id = d3.select(this).attr("id")
 				var layer = id.split("_")[0]
-				var value = id.split("_")[1]
-				var key = id.split("_")[2]
-				console.log([layer,value])
-				map.setPaintProperty(layer,"fill-opacity",1)
+// 				var value = id.split("_")[1]
+// 				var key = id.split("_")[2]
+				// console.log([layer,value])
+				map.setPaintProperty(layer,"fill-opacity",.8)
 			})
 			.on("mouseout",function(){
 				var id = d3.select(this).attr("id")
 				var layer = id.split("_")[0]
-				var value = id.split("_")[1]
-				var key = id.split("_")[2]
-				map.setPaintProperty(layer,"fill-opacity",.1)
+// 				var value = id.split("_")[1]
+// 				var key = id.split("_")[2]
+				var oc = d3.select(this).attr("oc")
+				
+				console.log(oc)
+				if(oc=="c"){
+					console.log(oc)
+					map.setPaintProperty(layer,"fill-opacity",.1)
+				}
+			})
+			.on("click",function(){
+				d3.selectAll(".listText").style("display","none")
+				var id = d3.select(this).attr("id")
+				var layer = id.split("_")[0]
+// 				var value = id.split("_")[1]
+// 				var key = id.split("_")[2]
+				var oc = d3.select(this).attr("oc")
+				
+				if(oc=="o"){
+					d3.select(this).attr("oc","c")
+					d3.select("#"+layer+"_info").style("display","none")
+					return
+				}
+				
+				
+				for(var l in layers){
+					console.log(layers[l])
+					map.setPaintProperty(layers[l],"fill-opacity",.1)
+					
+					d3.select("#"+layers[l]+"_subtitle").attr("oc","c")
+					
+				}
+				d3.select(this).attr("oc","o")
+				d3.select("#"+layer+"_info").style("display","block")
+				
+				
+			//	var id = d3.select(this).attr("id")
+				// var value = id.split("_")[1]
+	// 			var key = id.split("_")[2]
+	// 			console.log([layer,value])
+				map.setPaintProperty(layer,"fill-opacity",.8)
 			})
 			//.style("border","1px solid "+colors[layerName])
+			
 		row.append("div").attr("class","listText")
-		
+			.attr("id",layerName+"_info")
 			.html(
 				// "There are <strong>"+layerSizes[layerName]+" "+ layerDisplayName.toLowerCase()
 // 				+"s</strong> in New York City. <br><strong>"+
@@ -439,8 +481,10 @@ function drawList(features,dict,map){
 				//layerDisplayName+" "+value+"</strong> "
 				"intersects with "+intersectionsText
 			)
-			.style("padding-left","5px")
-			.style("padding-bottom","10px")
+			.style("padding","5px")
+			.style("border","1px solid "+colors[layerName])
+			
+				d3.selectAll(".listText").style("display","none")
 		
 	}
 
