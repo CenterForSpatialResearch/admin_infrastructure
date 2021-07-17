@@ -1,4 +1,14 @@
+//TODO
+//XXXexport and upload new layers
+//XXXconnect new data 
+//XXXfix upper/lower case issues
 
+//add hover popup on map- query filtered visible layers - add popup to show district numbers for each
+//fix municiple court same code in multiple boroughs
+//get second clicks working
+//redo text
+//get colors working - in groups or sections?
+//do a show all option? - offset lines?
 var map;
 var highlightColor = "#fa6614"
 var clicked = false
@@ -17,43 +27,29 @@ var currentAdmins = {}
 	
 	var root = "geoData/"
 	var layers = [
-		//"borough",
-		//"zipcode",
-		"policePrecinct",
 		"congressionalDistrict",
-		"stateAssemblyDistrict",
 		"stateSenate",
-		// "tract",
+		"stateAssemblyDistrict",
 		"cityCouncil",
-		//"schoolDistrict",
-		"fireDivision"
+
+		"policePrecinct",
+		"fireCompany",
+		"schoolDistrict",
+
+		"neighborhood",
+	//	"municipalCourt",
+		"communityDistrict"//,
+		//"borough"
 	]
-	var tempwords = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean urna erat, dictum vitae metus eu, vehicula consectetur tortor. Maecenas fermentum."
-	var layerDefinition = {
-		borough:"There are 5 boroughs in NYC",
-		zipcode:"There are 145 zipcodes",
-		policePrecinct:"There are 77 precincts ine NYC",
-		congressionalDistrict:tempwords,
-		stateAssemblyDistrict:tempwords,
-		stateSenate:tempwords,
-		tract:tempwords,
-		schoolDistrict:tempwords,
-		cityCouncil:tempwords,
-		fireDivision:tempwords
+	
+	var layersHover = []
+	for(var l in layers){
+		var layer = layers[l]
+		var layerHover = layer+"_hover"
+		layersHover.push(layerHover)
+		
 	}
 	
-	var layersHover = [
-		//"borough",
-		//"zipcode_hover",
-		"policePrecinct_hover",
-		"congressionalDistrict_hover",
-		"stateAssemblyDistrict_hover",
-		"stateSenate_hover",
-		// "tract",
-		"cityCouncil_hover",
-		//"schoolDistrict_hover",
-		"fireDivision_hover"
-	]
 	var layerUniqueIds = {
 		borough:"BoroName",
 		zipcode:"ZIPCODE",
@@ -64,7 +60,12 @@ var currentAdmins = {}
 		tract:"BoroCT2010",
 		schoolDistrict:"SchoolDist",
 		cityCouncil:"CounDist",
-		fireDivision:"FireDiv"
+		fireCompany:"FireCoNum",
+
+		municipalCourt:"MuniCourt",
+		neighborhood:"NTAName",
+		
+		communityDistrict:"BoroCD"
 	}
 	var layerLabel = {
 		borough:"Borough",
@@ -73,10 +74,12 @@ var currentAdmins = {}
 		congressionalDistrict:"Congressional District",
 		stateAssemblyDistrict:"State Assembly District",
 		stateSenate:"State Senate District",
-		tract:"Census Tract",
 		schoolDistrict:"School District",
 		cityCouncil:"City Council District",
-		fireDivision:"Fire Division"
+		fireCompany:"Fire Company",
+		neighborhood:"Neighborhood",
+		communityDistrict:"Community District",
+		municipalCourt:"Municiple Court District"
 	}
 	
 	// var promises = []
@@ -85,23 +88,30 @@ var currentAdmins = {}
 //     }
 	
  var colors = {
- 	borough:"#5462c9",
- 	zipcode:"#cfeb47",
- 	policePrecinct:"#4ca22f",
- 	congressionalDistrict:"#362fa4",
- 	stateAssemblyDistrict:"#41cde2",
- 	stateSenate:"#3b40a5",
- 	//tract:"#688dcd",
- 	schoolDistrict:"#9ca929",
- 	cityCouncil:"#5eb47f",
- 	fireDivision:"#314ca3"
+		borough:"#4ff097",
+		neighborhood:"#67e9be",
+		// zipcode:"ZIPCODE",
+	 
+		policePrecinct:"#efbe6c",
+		schoolDistrict:"#e7de35",
+		fireCompany:"#dadb7a",
+	 
+		congressionalDistrict:"#4ae0ee",
+		stateAssemblyDistrict:"#67e9be",
+		stateSenate:"#89e58d",
+	 
+		cityCouncil:"#b6e57b",
+		municipalCourt:"#cde45a",		
+		communityDistrict:"#68e957"
 
  }
 var layerSizes = {}
+var onOpacity = .8
+var offOpacity = .08
 	
-	console.log(window.innerWidth)
+//	console.log(window.innerWidth)
 	d3.select("#map").style("width",(window.innerWidth-270)+"px")
- Promise.all([d3.json("intersections_2.json"),d3.csv("Adeline/02_Exports/boundaryIntersections.csv"),d3.json("geoData/policePrecinct.geojson")])
+ Promise.all([d3.json("intersections_2.json"),d3.csv("combined-boundaries - combined-boundaries.csv"),d3.json("geoData/policePrecinct.geojson")])
  .then(function(data){
 	   var map = drawMap(data[0],data[1],data[2])
 })
@@ -112,13 +122,13 @@ var layerSizes = {}
 
 function drawMap(intersections,newInter,geoTest){
 	
-	console.log(intersections)
+//	console.log(intersections)
 	
 	for(var j in intersections){
-		console.log(intersections[j])
+	//	console.log(intersections[j])
 		layerSizes[j]=Object.keys(intersections[j]).length
 	}
-	console.log(layerSizes)
+//	console.log(layerSizes)
 	//console.log("map")
 	//console.log(newInter)
 	
@@ -178,7 +188,7 @@ function drawMap(intersections,newInter,geoTest){
 	}
 }
 	//console.log(links)
-	console.log(dict)
+//	console.log(dict)
 	
     // d3.select("#map").style("width",window.innerWidth+"px")
  //          .style("height",window.innerHeight+"px")
@@ -186,7 +196,7 @@ function drawMap(intersections,newInter,geoTest){
     mapboxgl.accessToken = "pk.eyJ1IjoiampqaWlhMTIzIiwiYSI6ImNpbDQ0Z2s1OTN1N3R1eWtzNTVrd29lMDIifQ.gSWjNbBSpIFzDXU2X5YCiQ"
     map = new mapboxgl.Map({
 		container: 'map',
-		style:"mapbox://styles/jjjiia123/cko6gwof42j1617kqh2r706sd",// ,//newest
+		style:"mapbox://styles/jjjiia123/ckr5q89fg07qb17tjzrng0lxs",// ,//newest
 		// style:"mapbox://styles/jjjiia123/ckoeh9hz9413117qhmh6w4mza",
 		zoom: 10,
 		preserveDrawingBuffer: true,
@@ -205,6 +215,11 @@ function drawMap(intersections,newInter,geoTest){
 	 map.addControl(new mapboxgl.NavigationControl(),'top-left');
 
       map.on("load",function(){
+		  console.log(map.getStyle().layers)
+		  map.on("click","communityDistrict",function(e){
+			  var features = map.queryRenderedFeatures(e.point);
+		  		console.log(features)
+		  })
  	 // d3.selectAll(".mapboxgl-ctrl-bottom-right").remove()
 //  	 d3.selectAll(".mapboxgl-ctrl-bottom-left").remove()
 
@@ -321,7 +336,7 @@ function drawMap(intersections,newInter,geoTest){
 			//map.setPaintProperty(layerName+"_hover",'fill-opacity',.1);
 
 			map.setPaintProperty(layerName+"_outline",'line-opacity',1);
-			map.setPaintProperty(layerName,'fill-opacity',0.1);
+			map.setPaintProperty(layerName,'fill-opacity', offOpacity);
 
 			map.setFilter(layerName,["==",filterKey,filterValue])
 			map.setFilter(layerName+"_outline",["==",filterKey,filterValue])
@@ -373,6 +388,7 @@ function drawMap(intersections,newInter,geoTest){
 		 })
 }
 function drawList(features,dict,map){
+	console.log(layers)
 	//console.log(features)
 	d3.select("#list").remove()
 		d3.select("#info")
@@ -380,112 +396,127 @@ function drawList(features,dict,map){
 			.attr("id","list")
 			//.style("margin-top","20px")
 	
+	var formatted = {}
 	for(var i in features){
 		//console.log(features[i])
 		var layerName = features[i].layer.id.replace("_hover","")
 		var layerDisplayName = layerLabel[layerName]
 		var keyName = layerUniqueIds[layerName]
 		var value = features[i].properties[keyName]
-		
-		var capLayerName = layerName[0].toUpperCase()+layerName.substring(1)
-		
-		var key = capLayerName+"_"+value
+		//var capLayerName = layerName[0].toUpperCase()+layerName.substring(1)
+		formatted[layerName]=value
+	}
+	//console.log(formatted)
+	
+	for(var la in layers){
+		var layerName = layers[la]
+		//var capLayerName = layerName[0].toUpperCase()+layerName.substring(1)
+		var key = layerName+"_"+formatted[layerName]
 		var intersections = dict[key]
-		var intersectionsText = ""
-		for(var l in intersections){
-			//console.log(l)
-			var formattedL = l[0].toLowerCase()+l.substring(1)
-			if(intersections[l].length>1){
-				intersectionsText+= intersections[l].length+" "+ layerLabel[formattedL]+"s<br>"	
-			}else{
-				intersectionsText+= intersections[l].length+" "+ layerLabel[formattedL]+"<br>"
-			}
-		}
-		
+		var layerDisplayName = layerLabel[layerName]
+		console.log(key)		
 		var row = d3.select("#list")
 			.append("div")
 			.attr("id","row")
 			.style("margin-bottom","10px")
 		
-		
 		row.append("div").attr("class","listSubtitle")	
-			.html(layerDisplayName+" "+value)
-			.style("background-color",colors[layerName])
-			.style("color","#fff")
+			.html(layerDisplayName+" "+formatted[layerName])
+			.style("color",colors[layerName])
+			.style("background-color","#000")
 			//.style("color","#fff")
 			.style("padding","5px")
 			.style("cursor","pointer")
 			.attr("id",layerName+"_subtitle")//+"_"+value+"_"+keyName)
 			.attr("oc","c")
-			.on("mouseover",function(){
-				var id = d3.select(this).attr("id")
-				var layer = id.split("_")[0]
-// 				var value = id.split("_")[1]
-// 				var key = id.split("_")[2]
-				// console.log([layer,value])
-				map.setPaintProperty(layer,"fill-opacity",.8)
-			})
-			.on("mouseout",function(){
-				var id = d3.select(this).attr("id")
-				var layer = id.split("_")[0]
-// 				var value = id.split("_")[1]
-// 				var key = id.split("_")[2]
-				var oc = d3.select(this).attr("oc")
-				
-				console.log(oc)
-				if(oc=="c"){
-					console.log(oc)
-					map.setPaintProperty(layer,"fill-opacity",.1)
-				}
-			})
+			// .on("mouseover",function(){
+// 				var layer = d3.select(this).attr("id").split("_")[0]
+// 				map.setPaintProperty(layer,"fill-opacity",onOpacity)
+// 			})
+// 			.on("mouseout",function(){
+// 				var layer = d3.select(this).attr("id").split("_")[0]
+// 				var oc = d3.select(this).attr("oc")
+//
+// 				if(oc=="c"){
+// 					map.setPaintProperty(layer,"fill-opacity",offOpacity)
+// 				}
+// 			})
 			.on("click",function(){
 				d3.selectAll(".listText").style("display","none")
-				var id = d3.select(this).attr("id")
-				var layer = id.split("_")[0]
-// 				var value = id.split("_")[1]
-// 				var key = id.split("_")[2]
+				var layer = d3.select(this).attr("id").split("_")[0]
 				var oc = d3.select(this).attr("oc")
 				
 				if(oc=="o"){
 					d3.select(this).attr("oc","c")
 					d3.select("#"+layer+"_info").style("display","none")
+					map.setPaintProperty(layer,"fill-opacity",offOpacity)
 					return
 				}
 				
 				
 				for(var l in layers){
-					console.log(layers[l])
-					map.setPaintProperty(layers[l],"fill-opacity",.1)
-					
+					map.setPaintProperty(layers[l],"fill-opacity",offOpacity)
 					d3.select("#"+layers[l]+"_subtitle").attr("oc","c")
 					
 				}
 				d3.select(this).attr("oc","o")
 				d3.select("#"+layer+"_info").style("display","block")
-				
-				
-			//	var id = d3.select(this).attr("id")
-				// var value = id.split("_")[1]
-	// 			var key = id.split("_")[2]
-	// 			console.log([layer,value])
-				map.setPaintProperty(layer,"fill-opacity",.8)
+			
+				map.setPaintProperty(layer,"fill-opacity",onOpacity)
 			})
-			//.style("border","1px solid "+colors[layerName])
+			console.log(intersections)
 			
-		row.append("div").attr("class","listText")
+		var intersectionLayers = row.append("div").attr("class","listText")
 			.attr("id",layerName+"_info")
-			.html(
-				// "There are <strong>"+layerSizes[layerName]+" "+ layerDisplayName.toLowerCase()
-// 				+"s</strong> in New York City. <br><strong>"+
-		
-				//layerDisplayName+" "+value+"</strong> "
-				"intersects with "+intersectionsText
-			)
-			.style("padding","5px")
-			.style("border","1px solid "+colors[layerName])
+			.html("intersects with")
 			
-				d3.selectAll(".listText").style("display","none")
-		
+			for(var inter in intersections){
+				//var formattedL =inter[0].toLowerCase()+inter.substring(1)
+				var intersectionLayer = intersectionLayers.append("div")
+					.attr("id",inter+"_intersections")
+					.on("click",function(){
+						var clickedLayer = d3.select(this).attr("id").replace("_intersections","")
+						//var formattedClicked = clickedLayer[0].toLowerCase()+clickedLayer.substring(1)
+						var gids = intersections[clickedLayer]
+						console.log(gids)
+						var formattedGids = []
+						for(var g in gids){
+							formattedGids.push(parseInt(gids[g]))
+						}
+						
+						var idKey = layerUniqueIds[clickedLayer]
+						console.log(formattedGids)
+						console.log(layerUniqueIds[clickedLayer])
+						var filter = ["in",idKey].concat(formattedGids)
+						//map.setPaintProperty(formattedClicked+"_intersect","fill-opacity",.5)
+						map.setPaintProperty(clickedLayer+"_intersect","line-color",colors[formattedClicked])
+						map.setPaintProperty(clickedLayer+"_intersect","line-width",2)
+						map.setLayoutProperty(clickedLayer+"_intersect",'visibility',"visible");//
+						console.log(filter)
+						for(var interLayers in layers){
+							var intersectionLayerName = layers[interLayers]
+ 							map.setFilter(intersectionLayerName+"_intersect",["==",idKey,""])
+							
+							if(intersectionLayerName!=layerName){
+								console.log([intersectionLayerName,layerName])
+			 			map.setLayoutProperty(intersectionLayerName+"_outline",'visibility',"none");//
+			 		map.setLayoutProperty(intersectionLayerName,'visibility',"none");//
+							}
+						}
+						
+ 						map.setFilter(clickedLayer+"_intersect",filter)
+						
+   //     map.setFilter("counties",["in","FIPS"].concat(list))
+						
+						
+					})
+				if(intersections[inter].length>1){
+					intersectionLayer.html(intersections[inter].length+" "+ layerLabel[formattedL]+"s")	
+				}else{
+					intersectionLayer.html(intersections[inter].length+" "+ layerLabel[formattedL])
+				}
+			}
+			d3.selectAll(".listText").style("display","none")
 	}
 
 }
@@ -507,7 +538,7 @@ function filterOnResult(map,features){
 		 
 
 		 // map.setPaintProperty(layerName,'fill-color',colors[i]);
-		 map.setPaintProperty(layerName,'fill-opacity',.1);
+		 map.setPaintProperty(layerName,'fill-opacity',offOpacity);
 			//map.setFilter(layerName+"_hover",["!=",idKey,gid])
 		}
 }
