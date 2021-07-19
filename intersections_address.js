@@ -3,6 +3,7 @@
 //XXXconnect new data 
 //XXXfix upper/lower case issues
 
+//Change fire division to fire company
 //add hover popup on map- query filtered visible layers - add popup to show district numbers for each
 //fix municiple court same code in multiple boroughs
 //get second clicks working
@@ -10,6 +11,7 @@
 //get colors working - in groups or sections?
 //do a show all option? - offset lines?
 var map;
+var currentBorough;
 var highlightColor = "#fa6614"
 var clicked = false
 var currentAdmins = {}
@@ -27,6 +29,8 @@ var currentAdmins = {}
 	
 	var root = "geoData/"
 	var layers = [
+		"borough",
+		//"zipcode",
 		"congressionalDistrict",
 		"stateSenate",
 		"stateAssemblyDistrict",
@@ -37,9 +41,8 @@ var currentAdmins = {}
 		"schoolDistrict",
 
 		"neighborhood",
-	//	"municipalCourt",
+		//"municipalCourt",
 		"communityDistrict"//,
-		//"borough"
 	]
 	
 	var layersHover = []
@@ -63,8 +66,7 @@ var currentAdmins = {}
 		fireCompany:"FireCoNum",
 
 		municipalCourt:"MuniCourt",
-		neighborhood:"NTAName",
-		
+		neighborhood:"NTACode",
 		communityDistrict:"BoroCD"
 	}
 	var layerLabel = {
@@ -107,27 +109,28 @@ var currentAdmins = {}
  }
 var layerSizes = {}
 var onOpacity = .8
-var offOpacity = .08
+var offOpacity = .05
 	
 //	console.log(window.innerWidth)
 	d3.select("#map").style("width",(window.innerWidth-270)+"px")
- Promise.all([d3.json("intersections_2.json"),d3.csv("combined-boundaries - combined-boundaries.csv"),d3.json("geoData/policePrecinct.geojson")])
+Promise.all([
+			d3.csv("intersections_notract.csv")])
  .then(function(data){
-	   var map = drawMap(data[0],data[1],data[2])
+	   var map = drawMap(data[0])
 })
 //click layer
 //show a layer
 //
 
 
-function drawMap(intersections,newInter,geoTest){
+function drawMap(newInter){
 	
-//	console.log(intersections)
+	//console.log(intersections)
 	
-	for(var j in intersections){
-	//	console.log(intersections[j])
-		layerSizes[j]=Object.keys(intersections[j]).length
-	}
+	// for(var j in intersections){
+	// //	console.log(intersections[j])
+	// 	layerSizes[j]=Object.keys(intersections[j]).length
+	// }
 //	console.log(layerSizes)
 	//console.log("map")
 	//console.log(newInter)
@@ -135,14 +138,13 @@ function drawMap(intersections,newInter,geoTest){
 	var links = []
 	var dict = {}
 	for(var i in newInter){
-		if(newInter[i]["fileName"]!=undefined){
+		if(newInter[i]["L1"]!=undefined){
 			
-		var layerNames = newInter[i]["fileName"].replace(".geojson","")
-		var l1 = layerNames.split("-")[0]
-		var l2 = layerNames.split("-")[1]
+		//var layerNames = newInter[i]["fileName"].replace(".geojson","")
+		var l1 = newInter[i].L1
+		var l2 = newInter[i].L2
 		var id1 = newInter[i].ID1
 		var id2 = newInter[i].ID2
-			
 		if(Object.keys(dict).indexOf(l1+"_"+id1)==-1){
 			dict[l1+"_"+id1] = {}
 			if(Object.keys(dict[l1+"_"+id1]).indexOf(l2)==-1){
@@ -150,8 +152,7 @@ function drawMap(intersections,newInter,geoTest){
 				dict[l1+"_"+id1][l2].push(id2)
 			}else{
 				dict[l1+"_"+id1][l2].push(id2)
-			}
-			
+			}	
 			//dict[l1+"_"+id1].push(l2+"_"+id2)
 		}else{
 			// dict[l1+"_"+id1].push(l2+"_"+id2)
@@ -162,7 +163,6 @@ function drawMap(intersections,newInter,geoTest){
 				dict[l1+"_"+id1][l2].push(id2)
 			}
 		}
-		
 		if(Object.keys(dict).indexOf(l2+"_"+id2)==-1){
 			dict[l2+"_"+id2] = {}
 			if(Object.keys(dict[l2+"_"+id2]).indexOf(l2)==-1){
@@ -182,16 +182,10 @@ function drawMap(intersections,newInter,geoTest){
 				dict[l2+"_"+id2][l1].push(id1)
 			}
 		}
-		
-		
 		links.push({source:l1+"_"+id1,sourceLayer:l1,sourceId:id1,target:l2+"_"+id2,targetLayer:l2,targetId:id2,})
 	}
 }
-	//console.log(links)
-//	console.log(dict)
-	
-    // d3.select("#map").style("width",window.innerWidth+"px")
- //          .style("height",window.innerHeight+"px")
+	console.log(dict)
 
     mapboxgl.accessToken = "pk.eyJ1IjoiampqaWlhMTIzIiwiYSI6ImNpbDQ0Z2s1OTN1N3R1eWtzNTVrd29lMDIifQ.gSWjNbBSpIFzDXU2X5YCiQ"
     map = new mapboxgl.Map({
@@ -212,13 +206,13 @@ function drawMap(intersections,newInter,geoTest){
 	// map.getCanvas().style.cursor = "unset";
 
 //
-	 map.addControl(new mapboxgl.NavigationControl(),'top-left');
+	 map.addControl(new mapboxgl.NavigationControl(),'bottom-right');
 
       map.on("load",function(){
-		  console.log(map.getStyle().layers)
-		  map.on("click","communityDistrict",function(e){
+		//  console.log(map.getStyle().layers)
+		  map.on("click",function(e){
 			  var features = map.queryRenderedFeatures(e.point);
-		  		console.log(features)
+		  		//console.log(features)
 		  })
  	 // d3.selectAll(".mapboxgl-ctrl-bottom-right").remove()
 //  	 d3.selectAll(".mapboxgl-ctrl-bottom-left").remove()
@@ -232,9 +226,10 @@ function drawMap(intersections,newInter,geoTest){
 				 marker:false
 				 //limit:1
  			 })
+			 map.addControl(geocoder)
 		//https://docs.mapbox.com/mapbox-gl-js/example/mapbox-gl-geocoder-outside-the-map/
 		//https://github.com/mapbox/mapbox-gl-geocoder/blob/master/API.md#parameters
-		document.getElementById('geocoder').appendChild(geocoder.onAdd(map));
+		//document.getElementById('geocoder').appendChild(geocoder.onAdd(map));
 		
 //
 // 	console.log(map.getStyle().layers)
@@ -242,34 +237,19 @@ function drawMap(intersections,newInter,geoTest){
 //
 		//.addTo(map);
 		var filters = {}
-// map.setLayoutProperty("tract",'visibility',"none");// //
-// map.setLayoutProperty("tract_outline",'visibility',"none");// //
- // map.setPaintProperty("borough_hover",'fill-color',"#000");
- // map.setPaintProperty('borough_hover','fill-opacity',0.3);
 
-
- // map.setPaintProperty('background','color',"#fff");
-// map.setPaintProperty('water','fill-color',"#fff");
 	map.on("click","borough_hover",function(e){
-		//https://docs.mapbox.com/mapbox-gl-js/example/mouse-position/
-			// console.log(e.point)
-	// 		console.log(e.lngLat.lat)
-		// if(marker!=undefined){
-		// marker.remove()
-		//
-		// }
-		//d3.select(".mapboxgl-ctrl-geocoder--input input").attr("value","test")
-	geocoder.clear()
+		geocoder.clear()
 			d3.selectAll(".mapboxgl-marker").remove()
 		var marker = new mapboxgl.Marker({
 			color:"#fa6614"
 		})
 			marker.setLngLat([e.lngLat.lng,e.lngLat.lat])
 			.addTo(map);
-			d3.select("#presentLocation")
-				.html("<span class=\"highlight\">The clicked location </span> "+Math.round(e.lngLat.lng*10000)/10000
+			d3.select("#currentSelection")
+				.html("<span class=\"highlight\">"+Math.round(e.lngLat.lng*10000)/10000
 					+", "+Math.round(e.lngLat.lat*10000)/10000
-					+" <span class=\"highlight\">is in:</span> ")
+					+"</span><br>Your coordinates are in these jurisdictions:" )
 
 			//console.log(marker)
 	})
@@ -279,24 +259,12 @@ function drawMap(intersections,newInter,geoTest){
 	
 	for(var i in layers){
 
-		 // console.log(layers[i])
-		// map.setFilter(layers[i]+"_hover",["==","",""])
- 
 		map.setPaintProperty(layers[i]+"_hover",'fill-opacity',0);
-		// map.setPaintProperty(layers[i]+"_hover",'fill-color',colors[layers[i]]);
-
-
-
 		map.setPaintProperty(layers[i],'fill-color',colors[layers[i]]);
 		map.setPaintProperty(layers[i]+"_outline",'line-color',colors[layers[i]]);
 
  
 		  map.setPaintProperty(layers[i]+"_outline",'line-width',1);
-		// map.setPaintProperty(layers[i]+"_outline",'line-opacity',0);
-
-		 // map.setPaintProperty(layers[i],'line-opacity',.1);		//
-		//  map.setLayoutProperty("road",'visibility',"none");
-	//	map.setPaintProperty(layers[i],'fill-opacity',0.2);
 
 		map.on("click",layers[i]+"_hover",function(c){
 
@@ -322,6 +290,7 @@ function drawMap(intersections,newInter,geoTest){
 				drawList(clickedFeatures,dict,map)
 			
 			}
+     		 map.setLayoutProperty(layerName+"_intersect",'visibility',"none");
 
 			//displayText+=layerName+" "+filterKey+": "+filterValue
 			map.setLayoutProperty(layerName,'visibility',"visible");//
@@ -335,18 +304,12 @@ function drawMap(intersections,newInter,geoTest){
 
 			//map.setPaintProperty(layerName+"_hover",'fill-opacity',.1);
 
-			map.setPaintProperty(layerName+"_outline",'line-opacity',1);
+			map.setPaintProperty(layerName+"_outline",'line-opacity',onOpacity);
 			map.setPaintProperty(layerName,'fill-opacity', offOpacity);
 
 			map.setFilter(layerName,["==",filterKey,filterValue])
 			map.setFilter(layerName+"_outline",["==",filterKey,filterValue])
-			//	console.log([layerName,filterValue])
-
-			// map.setPaintProperty(layerName,'line-opacity',1);
-			// map.setPaintProperty(layerName,'offset',i);
-			//
-			// currentAdmins[layerName]=intersections[layerName][filterValue]
-			// currentAdmins[layerName]["gid"]=filterValue
+		
   	    })
   	}
 	
@@ -354,8 +317,10 @@ function drawMap(intersections,newInter,geoTest){
 	//https://github.com/mapbox/mapbox-gl-geocoder/blob/master/API.md#parameters
 	geocoder.on("results",function(result){
 		d3.selectAll(".mapboxgl-marker").remove()
+		d3.select("#currentSelection").html("")
 		for(var i in layers){
       		 map.setPaintProperty(layers[i],'fill-opacity',0);
+      		 map.setLayoutProperty(layers[i]+"_intersect",'visibility',"none");
 			
 		}
 	})
@@ -363,10 +328,13 @@ function drawMap(intersections,newInter,geoTest){
 			// console.log("geo")
 			//console.log(result)
 			
-			d3.select("#presentLocation")
-				.html("The address"
+			d3.select("#currentSelection")
+				.html("<span class=\"highlight\">"
 					+result.result["place_name"]
-					+" is in")
+					.replace(", New York "," ")
+					.replace(", United States","")
+					.split(", ").join("<br>")
+					+"</span><br>Your address is in these jurisdictions:")
 			
  			if(result!=null){
 				var center = result.result.center
@@ -388,7 +356,7 @@ function drawMap(intersections,newInter,geoTest){
 		 })
 }
 function drawList(features,dict,map){
-	console.log(layers)
+	//console.log(layers)
 	//console.log(features)
 	d3.select("#list").remove()
 		d3.select("#info")
@@ -408,113 +376,150 @@ function drawList(features,dict,map){
 	}
 	//console.log(formatted)
 	
+	//console.log(dict)
 	for(var la in layers){
 		var layerName = layers[la]
 		//var capLayerName = layerName[0].toUpperCase()+layerName.substring(1)
 		var key = layerName+"_"+formatted[layerName]
 		var intersections = dict[key]
+		console.log([intersections,key])
 		var layerDisplayName = layerLabel[layerName]
-		console.log(key)		
+		//console.log(key)		
 		var row = d3.select("#list")
 			.append("div")
 			.attr("id","row")
 			.style("margin-bottom","10px")
+			.style("background-color","#000")
+			.attr("id",layerName+"_subtitle")//+"_"+value+"_"+keyName)		
 		
 		row.append("div").attr("class","listSubtitle")	
 			.html(layerDisplayName+" "+formatted[layerName])
+		.style("display","inline-block")
+			.attr("intersections",intersections)
 			.style("color",colors[layerName])
-			.style("background-color","#000")
 			//.style("color","#fff")
 			.style("padding","5px")
-			.style("cursor","pointer")
 			.attr("id",layerName+"_subtitle")//+"_"+value+"_"+keyName)
 			.attr("oc","c")
-			// .on("mouseover",function(){
-// 				var layer = d3.select(this).attr("id").split("_")[0]
-// 				map.setPaintProperty(layer,"fill-opacity",onOpacity)
-// 			})
-// 			.on("mouseout",function(){
-// 				var layer = d3.select(this).attr("id").split("_")[0]
-// 				var oc = d3.select(this).attr("oc")
-//
-// 				if(oc=="c"){
-// 					map.setPaintProperty(layer,"fill-opacity",offOpacity)
-// 				}
-// 			})
+		.style("width","200px")
+			.style("vertical-align","top")
+			
+		row.append("div").attr("class","oc").attr("id",layerName+"_oc").html("+").style("display","inline-block")
+			.style("color","#fff").style("font-size","14px").style("float","top-right")
+			.style("cursor","pointer")
+			.style("margin","5px")
+		.style("line-height","10px")
+		
 			.on("click",function(){
 				d3.selectAll(".listText").style("display","none")
 				var layer = d3.select(this).attr("id").split("_")[0]
 				var oc = d3.select(this).attr("oc")
+			
+			if(oc=="o"){
+				d3.select(this).attr("oc","c")
+				d3.select("#"+layer+"_oc").html("+").style('transform',"rotate(0deg)").style("font-size","16px")
+				d3.select("#"+layer+"_info").style("display","none")
+				map.setPaintProperty(layer,"fill-opacity",offOpacity)
 				
-				if(oc=="o"){
-					d3.select(this).attr("oc","c")
-					d3.select("#"+layer+"_info").style("display","none")
-					map.setPaintProperty(layer,"fill-opacity",offOpacity)
-					return
-				}
-				
-				
+				//return
+			}else{
 				for(var l in layers){
 					map.setPaintProperty(layers[l],"fill-opacity",offOpacity)
-					d3.select("#"+layers[l]+"_subtitle").attr("oc","c")
+					map.setLayoutProperty(layers[l]+"_intersect",'visibility',"none");//
 					
+					d3.select("#"+layers[l]+"_subtitle").attr("oc","c")
+					d3.select("#"+layers[l]+"_oc").html("+").style('transform',"rotate(0deg)").style("font-size","16px")
+					
+					map.setLayoutProperty(layers[l],'visibility',"visible");//
+					map.setLayoutProperty(layers[l]+"_outline",'visibility',"visible");//
+				
 				}
 				d3.select(this).attr("oc","o")
+				d3.select("#"+layer+"_oc").style('transform',"rotate(-45deg)").style("font-size","18px")
 				d3.select("#"+layer+"_info").style("display","block")
-			
 				map.setPaintProperty(layer,"fill-opacity",onOpacity)
-			})
-			console.log(intersections)
+			}
+		})
+		
 			
 		var intersectionLayers = row.append("div").attr("class","listText")
 			.attr("id",layerName+"_info")
 			.html("intersects with")
+		.style("margin-left","5px")
+		.style('color',"#fff")
+		.style('font-style',"italic")
+		.style('padding',"5px")
+			
 			
 			for(var inter in intersections){
 				//var formattedL =inter[0].toLowerCase()+inter.substring(1)
 				var intersectionLayer = intersectionLayers.append("div")
-					.attr("id",inter+"_intersections")
-					.on("click",function(){
-						var clickedLayer = d3.select(this).attr("id").replace("_intersections","")
-						//var formattedClicked = clickedLayer[0].toLowerCase()+clickedLayer.substring(1)
-						var gids = intersections[clickedLayer]
-						console.log(gids)
-						var formattedGids = []
-						for(var g in gids){
-							formattedGids.push(parseInt(gids[g]))
-						}
+					.attr('class',"subIntersections")
+					.style("cursor","pointer")
+					.style("margin-left","20px")
+					.attr("id",inter+"_intersections_"+layerName+"_"+formatted[layerName])
+					.html(intersections[inter].length+" "+ layerLabel[inter])	
+					.style("color","#fff")
+				
+					intersectionLayer.on("click",function(){
+						d3.selectAll(".mapboxgl-marker").remove()
 						
+						d3.selectAll(".subIntersections").style("background-color","#000")
+						d3.select(this).style("background-color","#aaa")
+						//add remove maker here
+						var clickedLayer = d3.select(this).attr("id").split("_")[0]
+						var originalLayer = d3.select(this).attr("id").split("_")[2]
+						var originalLayerValue = d3.select(this).attr("id").split("_")[3]
+						
+						var currentIntersections = dict[originalLayer+"_"+originalLayerValue][clickedLayer]
+						
+						console.log(clickedLayer)
+						console.log(currentIntersections)
+						console.log(originalLayer)
+						console.log(originalLayerValue)
+						
+						d3.select("#currentSelectionMap").html(
+							"Your location shares <span style=\"color:"+colors[originalLayer]+"\">"
+							+layerLabel[originalLayer]
+							+" "+originalLayerValue
+							+"</span><br>with<br>"
+							+"<span style=\"color:"+colors[clickedLayer]+"\">"
+							+currentIntersections.length-1
+							+" "+layerLabel[clickedLayer]+"s: "+currentIntersections.join(" ")+"</span>"
+						)
+						
+						//var gids = intersections[clickedLayer]
+						var formattedCI = []
+												//
+						 if(clickedLayer=="neighborhood"|| clickedLayer=="borough"){
+						 	for(var g in currentIntersections){
+						 		formattedCI.push(currentIntersections[g])
+						 	}
+						}else{
+						 	for(var g in currentIntersections){
+						 		formattedCI.push(parseInt(currentIntersections[g]))
+						 	}
+						 }
+					 for(l3 in layers){
+						 var interLayer3 = layers[l3]
+ 						map.setLayoutProperty(interLayer3+"_intersect",'visibility',"none");//
+						 
+						if(interLayer3!=originalLayer){
+	 						map.setLayoutProperty(interLayer3,'visibility',"none");//
+	 						map.setLayoutProperty(interLayer3+"_outline",'visibility',"none");//
+						}
+					 }
+						 
 						var idKey = layerUniqueIds[clickedLayer]
-						console.log(formattedGids)
-						console.log(layerUniqueIds[clickedLayer])
-						var filter = ["in",idKey].concat(formattedGids)
-						//map.setPaintProperty(formattedClicked+"_intersect","fill-opacity",.5)
-						map.setPaintProperty(clickedLayer+"_intersect","line-color",colors[formattedClicked])
-						map.setPaintProperty(clickedLayer+"_intersect","line-width",2)
+						var filter = ["in",idKey].concat(formattedCI)
+						map.setPaintProperty(clickedLayer+"_intersect","line-color","#fff")//colors[clickedLayer])
+						map.setPaintProperty(clickedLayer+"_intersect","line-width",1)
 						map.setLayoutProperty(clickedLayer+"_intersect",'visibility',"visible");//
-						console.log(filter)
-						for(var interLayers in layers){
-							var intersectionLayerName = layers[interLayers]
- 							map.setFilter(intersectionLayerName+"_intersect",["==",idKey,""])
-							
-							if(intersectionLayerName!=layerName){
-								console.log([intersectionLayerName,layerName])
-			 			map.setLayoutProperty(intersectionLayerName+"_outline",'visibility',"none");//
-			 		map.setLayoutProperty(intersectionLayerName,'visibility',"none");//
-							}
-						}
-						
- 						map.setFilter(clickedLayer+"_intersect",filter)
-						
-   //     map.setFilter("counties",["in","FIPS"].concat(list))
-						
+						map.setFilter(clickedLayer+"_intersect",filter)
 						
 					})
-				if(intersections[inter].length>1){
-					intersectionLayer.html(intersections[inter].length+" "+ layerLabel[formattedL]+"s")	
-				}else{
-					intersectionLayer.html(intersections[inter].length+" "+ layerLabel[formattedL])
-				}
+
+				
 			}
 			d3.selectAll(".listText").style("display","none")
 	}
@@ -522,11 +527,28 @@ function drawList(features,dict,map){
 }
 
 function filterOnResult(map,features){
+	
+	// for(var i in features){
+	// 	var layerName = features[i].layer.id.replace("_hover","")
+	// 	 var idKey = layerUniqueIds[layerName]
+	// 	console.log(layerName)
+	// 	if(layerName=="borough"){
+	// 		console.log(features[i])
+	// 		currentBorough = features[i]["properties"][idKey]
+	// 		break
+	//
+	// 	}
+	//
+	// }
+	// 	console.log(currentBorough)
+	// var doubleFilterLayers = ["neighborhood","municipalCourt"]
+	//
 	for(var f in features){
-			//console.log(features[f])
+			console.log(features[f])
 			 var layerName = features[f].layer.id.replace("_hover","")  	 	  
 			 var idKey = layerUniqueIds[layerName]
 			
+		
 			//console.log(idKey)
 			 var gid = features[f]["properties"][idKey]
 			//console.log([idKey,gid])
@@ -535,6 +557,9 @@ function filterOnResult(map,features){
    		 	map.setPaintProperty(layerName+"_outline",'line-opacity',1);
 			map.setLayoutProperty(layerName,'visibility',"visible");//
 			map.setLayoutProperty(layerName+"_outline",'visibility',"visible");//
+		
+			
+			
 		 
 
 		 // map.setPaintProperty(layerName,'fill-color',colors[i]);

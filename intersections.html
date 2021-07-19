@@ -73,7 +73,7 @@
 			padding:10px;
 			height:100vh;
 			width:250px;
-			background-color:rgba(255,255,255,1);
+			background-color:rgba(255,255,255,0);
 /*			filter: drop-shadow(4px 4px 4px rgba(0,0,0,.2));
 */			margin:0px;
 			color::#fa6614;
@@ -95,22 +95,42 @@
 			left:320px;
 			top:10px;*/
 			padding:5px;
-			padding-top:20px;
+			/*padding-top:20px;*/
 		}
 		.highlight{
-			/*color:#fa6614;
-*/font-weight:600;
-			font-size:12px;
+			color:#fa6614;
+			font-weight:600;
+			font-size:16px;
 		}
 		.listSubtitle{
-			font-size:12px;
+			font-size:14px;
 			font-weight:400;
 		}
 		.listText{
-			font-size:10px;
+			font-size:12px;
 		/*	font-style:italic;
 */			font-weight:100;
 			line-height:110%;
+		}
+		#instruction{
+		}
+		#currentSelectionMap{
+			position:fixed;
+			left:320px;
+			top:30px;
+			width:200px;
+		}
+			
+			#currentSelection{
+			
+/*			background-color:rgba(255,255,255,.8);
+*//*			width:200px;
+*/			font-size:14px;
+			padding:10px;
+		/*	height:100px;*/
+/*			background-color:#000;
+*//*			color:white;
+*/			/*border-radius:20px;*/
 		}
     </style>
 
@@ -119,19 +139,23 @@
 <body>
 
 <div id="map"></div>
+	<div id="currentSelectionMap">ddd</div>
 
 <div id="info">
 	<div id="infoTitle">
 		Administrative Infrastructure
 	</div>
+	<div id="currentSelection">Click anywhere on map or enter an address to see administrative boundaries.</div>
+	<!-- <div id="instruction">Click anywhere on map or enter an address to see administrative boundaries.</div> -->
 	<!-- <div id="intro">From health, education, safety to political representation, every place in the city falls within a set administrative boundaries. These boundaries divide the city into units, but they also connect the city through their overlaps - indicating shared resources.
 	For example, how does your school district share its congresional representation? How does your neighborhood intersect with different police precincts in addition to your own?
 	</div> -->
-	<div id="instruction">Click anywhere on map or enter an address to see administrative boundaries.</div>
-	<br><br>	
+	
 	<div id="geocoder"></div>
 	<div id="presentLocation"></div>
-	<!-- <div id="key">
+	<!-- https://data.cityofnewyork.us/City-Government/Neighborhood-Tabulation-Areas-NTA-/cpf4-rkhq
+	https://www1.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page
+	 --><!-- <div id="key">
 		Click on one of the layers below to see details
 	</div> -->
 </div>
