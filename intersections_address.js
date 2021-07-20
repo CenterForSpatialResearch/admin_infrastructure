@@ -200,8 +200,8 @@ function drawMap(newInter){
 		// style:"mapbox://styles/jjjiia123/ckoeh9hz9413117qhmh6w4mza",
 		zoom: 10,
 		preserveDrawingBuffer: true,
-		minZoom:8,
-		maxZoom:14,// ,
+		minZoom:9,
+		maxZoom:13,// ,
 		// maxBounds: maxBounds
 		center: [-73.95,40.71]
      });	 //
