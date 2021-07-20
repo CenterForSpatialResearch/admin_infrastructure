@@ -121,7 +121,7 @@ var offOpacity = .05
 Promise.all([
 			d3.csv("intersections_07202021.csv")])
  .then(function(data){
-	 console.log(data)
+	 //console.log(data)
 	   var map = drawMap(data[0])
 })
 //click layer
@@ -191,7 +191,7 @@ function drawMap(newInter){
 		links.push({source:l1+"_"+id1,sourceLayer:l1,sourceId:id1,target:l2+"_"+id2,targetLayer:l2,targetId:id2,})
 	}
 }
-	console.log(dict)
+//	console.log(dict)
 
     mapboxgl.accessToken = "pk.eyJ1IjoiampqaWlhMTIzIiwiYSI6ImNpbDQ0Z2s1OTN1N3R1eWtzNTVrd29lMDIifQ.gSWjNbBSpIFzDXU2X5YCiQ"
     map = new mapboxgl.Map({
@@ -218,7 +218,7 @@ function drawMap(newInter){
 		//  console.log(map.getStyle().layers)
 		  map.on("click",function(e){
 			  var features = map.queryRenderedFeatures(e.point);
-		  	console.log(features)
+		  		//console.log(features)
 		  })
  	 // d3.selectAll(".mapboxgl-ctrl-bottom-right").remove()
 //  	 d3.selectAll(".mapboxgl-ctrl-bottom-left").remove()
@@ -416,7 +416,7 @@ function drawList(features,dict,map){
 		//var capLayerName = layerName[0].toUpperCase()+layerName.substring(1)
 		var key = layerName+"_"+formatted[layerName]
 		var intersections = dict[key]
-		console.log([intersections,key])
+		//console.log([intersections,key])
 		var layerDisplayName = layerLabel[layerName]
 		//console.log(key)		
 		var row = d3.select("#list")
