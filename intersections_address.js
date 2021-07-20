@@ -487,7 +487,19 @@ function drawList(features,dict,map){
 					.style("cursor","pointer")
 					.style("margin-left","20px")
 					.attr("id",inter+"_intersections_"+layerName+"_"+formatted[layerName])
-					.html(intersections[inter].length+" "+ layerLabel[inter])	
+					.html(
+						function(){
+							if(intersections[inter].length==1){
+								return intersections[inter].length+" "+ layerLabel[inter]
+							}else{
+								if(inter=="fireCompany"){
+									return intersections[inter].length+" Fire Companies"	
+								}else{
+									return intersections[inter].length+" "+ layerLabel[inter]+"s"
+								}
+							}
+						}
+					)
 					.attr("html",intersections[inter].length+" "+ layerLabel[inter])
 					.style("color","#fff")
 				
