@@ -93,7 +93,7 @@ var boroughDictionary = {1:"Manhattan",
 //     for(var i in layers){
 //     	promises.push(d3.json(root+layers[i]+".geojson"))
 //     }
-	
+var showAll = true	
  var colors = {
 		borough:"#4ff097",
 		neighborhood:"#67e9be",
@@ -201,7 +201,7 @@ function drawMap(newInter){
 		zoom: 10,
 		preserveDrawingBuffer: true,
 		minZoom:9,
-		maxZoom:13,// ,
+		maxZoom:15,// ,
 		// maxBounds: maxBounds
 		center: [-73.95,40.71]
      });	 //
@@ -244,6 +244,26 @@ function drawMap(newInter){
 		//.addTo(map);
 		var filters = {}
 
+		// d3.select("#showAll").on("click",function(){
+		// 	if(showAll==true){
+		// 		showAll=false
+		// 		d3.select(this).html("SHOW<br>ALL")
+		// 			for(var i in layers){
+		//    			   		 map.setLayoutProperty(layers[i]+"_outline",'visibility',"none");
+		// 	   		 map.setLayoutProperty(layers[i],'visibility',"none");
+		//
+		// 			}
+		// 	}else{
+		// 		showAll=true
+		// 		d3.select(this).html("HIDE<br>ALL")
+		// 		for(var i in layers){
+		//    		 map.setLayoutProperty(layers[i]+"_outline",'visibility',"visible");
+		//    		 map.setLayoutProperty(layers[i],'visibility',"visible");
+		//
+		// 		}
+		// 	}
+		// })
+
 	map.on("click","borough_hover",function(e){
 		geocoder.clear()
 			d3.selectAll(".mapboxgl-marker").remove()
@@ -262,15 +282,21 @@ function drawMap(newInter){
 	
 	
 	var clickedFeatures = []
+	// map.setLayoutProperty("road-label",'visibility',"none");
+	
 	
 	for(var i in layers){
 
 		map.setPaintProperty(layers[i]+"_hover",'fill-opacity',0);
 		map.setPaintProperty(layers[i],'fill-color',colors[layers[i]]);
-		map.setPaintProperty(layers[i]+"_outline",'line-color',colors[layers[i]]);
+		map.setPaintProperty(layers[i]+"_outline",'line-color',colors[layers[i]]);		//
+		 map.setLayoutProperty(layers[i]+"_outline",'visibility',"visible");
+		 map.setPaintProperty(layers[i]+"_outline",'line-opacity',.2);
+		 map.setPaintProperty(layers[i]+"_outline",'line-width',1);
+		// map.setPaintProperty(layers[i]+"_outline",'line-offset',parseInt(i));
 
  
-		  map.setPaintProperty(layers[i]+"_outline",'line-width',1);
+	//	  map.setPaintProperty(layers[i]+"_outline",'line-width',1);
 
 		map.on("click",layers[i]+"_hover",function(c){
 
