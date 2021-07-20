@@ -593,7 +593,9 @@ function drawList(features,dict,map){
 								
 								
 								
-								return originalFeature+"<br> is shared between <br>"+intersectionList
+								return originalFeature
+								+" <span style=\"color:#fff; background-color:#000\"> "
+								+"<br> is shared between <br></span>"+intersectionList
 							}
 							
 						)
@@ -654,7 +656,7 @@ function filterOnResult(map,features){
 	// var doubleFilterLayers = ["neighborhood","municipalCourt"]
 	//
 	for(var f in features){
-			console.log(features[f])
+			//console.log(features[f])
 			 var layerName = features[f].layer.id.replace("_hover","")  	 	  
 			 var idKey = layerUniqueIds[layerName]
 			
