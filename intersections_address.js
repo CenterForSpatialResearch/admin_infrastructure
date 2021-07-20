@@ -26,7 +26,12 @@ var currentAdmins = {}
 //  "zipcode.geojson",
 // "borough.geojson"
 // ]
-	
+var boroughDictionary = {1:"Manhattan",
+			"2":"Bronx",
+			"3":"Brooklyn",
+			"4":"Queens",
+			"5":"Staten Island",
+				}	
 	var root = "geoData/"
 	var layers = [
 		"borough",
@@ -40,11 +45,11 @@ var currentAdmins = {}
 		"fireCompany",
 		"schoolDistrict",
 
-		"neighborhood",
-		//"municipalCourt",
+		//"neighborhood",
+		"municipalCourt",
 		"communityDistrict"//,
 	]
-	
+	layers.sort()
 	var layersHover = []
 	for(var l in layers){
 		var layer = layers[l]
@@ -63,10 +68,10 @@ var currentAdmins = {}
 		tract:"BoroCT2010",
 		schoolDistrict:"SchoolDist",
 		cityCouncil:"CounDist",
-		fireCompany:"FireCoNum",
+		fireCompany:"UniqueId",
 
-		municipalCourt:"MuniCourt",
-		neighborhood:"NTACode",
+		municipalCourt:"UniqueId",
+		neighborhood:"NTAName",
 		communityDistrict:"BoroCD"
 	}
 	var layerLabel = {
@@ -114,8 +119,9 @@ var offOpacity = .05
 //	console.log(window.innerWidth)
 	d3.select("#map").style("width",(window.innerWidth-270)+"px")
 Promise.all([
-			d3.csv("intersections_notract.csv")])
+			d3.csv("intersections_07202021.csv")])
  .then(function(data){
+	 console.log(data)
 	   var map = drawMap(data[0])
 })
 //click layer
@@ -212,7 +218,7 @@ function drawMap(newInter){
 		//  console.log(map.getStyle().layers)
 		  map.on("click",function(e){
 			  var features = map.queryRenderedFeatures(e.point);
-		  		//console.log(features)
+		  	console.log(features)
 		  })
  	 // d3.selectAll(".mapboxgl-ctrl-bottom-right").remove()
 //  	 d3.selectAll(".mapboxgl-ctrl-bottom-left").remove()
@@ -268,6 +274,7 @@ function drawMap(newInter){
 
 		map.on("click",layers[i]+"_hover",function(c){
 
+		d3.select("#currentSelectionMap").html("")
 			
 
 			var feature = c.features[0]
@@ -318,6 +325,7 @@ function drawMap(newInter){
 	geocoder.on("results",function(result){
 		d3.selectAll(".mapboxgl-marker").remove()
 		d3.select("#currentSelection").html("")
+		d3.select("#currentSelectionMap").html("")
 		for(var i in layers){
       		 map.setPaintProperty(layers[i],'fill-opacity',0);
       		 map.setLayoutProperty(layers[i]+"_intersect",'visibility',"none");
@@ -393,53 +401,74 @@ function drawList(features,dict,map){
 			.attr("id",layerName+"_subtitle")//+"_"+value+"_"+keyName)		
 		
 		row.append("div").attr("class","listSubtitle")	
-			.html(layerDisplayName+" "+formatted[layerName])
-		.style("display","inline-block")
+			.html(function(){
+				
+				if(layerName=="municipalCourt"){
+					var boroCode = String(formatted[layerName].split("X")[0])
+					return "Municipal Court "+ boroughDictionary[boroCode]+" District "+formatted[layerName].split("X")[1]
+				}
+				if(layerName=="fireCompany"){
+					return "Fire District "+ formatted[layerName].split("X")[0]+" Company "+formatted[layerName].split("X")[1]
+					
+				}
+				return layerDisplayName+" "+formatted[layerName]
+			})
+		.	style("display","inline-block")
 			.attr("intersections",intersections)
 			.style("color",colors[layerName])
 			//.style("color","#fff")
 			.style("padding","5px")
 			.attr("id",layerName+"_subtitle")//+"_"+value+"_"+keyName)
 			.attr("oc","c")
-		.style("width","200px")
+			.style("width","200px")
 			.style("vertical-align","top")
 			
 		row.append("div").attr("class","oc").attr("id",layerName+"_oc").html("+").style("display","inline-block")
 			.style("color","#fff").style("font-size","14px").style("float","top-right")
 			.style("cursor","pointer")
 			.style("margin","5px")
-		.style("line-height","10px")
+			.style("line-height","10px")
 		
 			.on("click",function(){
 				d3.selectAll(".listText").style("display","none")
 				var layer = d3.select(this).attr("id").split("_")[0]
 				var oc = d3.select(this).attr("oc")
 			
-			if(oc=="o"){
-				d3.select(this).attr("oc","c")
-				d3.select("#"+layer+"_oc").html("+").style('transform',"rotate(0deg)").style("font-size","16px")
-				d3.select("#"+layer+"_info").style("display","none")
-				map.setPaintProperty(layer,"fill-opacity",offOpacity)
-				
-				//return
-			}else{
-				for(var l in layers){
-					map.setPaintProperty(layers[l],"fill-opacity",offOpacity)
-					map.setLayoutProperty(layers[l]+"_intersect",'visibility',"none");//
+				if(oc=="o"){
+					console.log("close")
+					d3.select("#currentSelectionMap").html("")
+					d3.select(this).attr("oc","c")
+					d3.select("#"+layer+"_oc").html("+").style('transform',"rotate(0deg)").style("font-size","16px")
+					d3.select("#"+layer+"_info").style("display","none")
+					map.setPaintProperty(layer,"fill-opacity",offOpacity)
 					
-					d3.select("#"+layers[l]+"_subtitle").attr("oc","c")
-					d3.select("#"+layers[l]+"_oc").html("+").style('transform',"rotate(0deg)").style("font-size","16px")
+					for(var l in layers){
+						map.setLayoutProperty(layers[l]+"_outline","visibility","visible")
+						map.setLayoutProperty(layers[l],"visibility","visible")
+						map.setPaintProperty(layers[l]+"_outline","line-opacity",onOpacity)
+						map.setLayoutProperty(layers[l]+"_intersect","visibility","none")
+						
+					}
+				}else{
+					for(var l in layers){
+						map.setPaintProperty(layers[l],"fill-opacity",offOpacity)
+						map.setPaintProperty(layers[l]+"_outline","line-opacity",offOpacity)
+						map.setLayoutProperty(layers[l]+"_intersect",'visibility',"none");//
 					
-					map.setLayoutProperty(layers[l],'visibility',"visible");//
-					map.setLayoutProperty(layers[l]+"_outline",'visibility',"visible");//
+						d3.select("#"+layers[l]+"_subtitle").attr("oc","c")
+						d3.select("#"+layers[l]+"_oc").html("+").style('transform',"rotate(0deg)").style("font-size","16px")
+					
+						map.setLayoutProperty(layers[l],'visibility',"visible");//
+						map.setLayoutProperty(layers[l]+"_outline",'visibility',"visible");//
 				
+					}
+					d3.select(this).attr("oc","o")
+					d3.select("#"+layer+"_oc").style('transform',"rotate(-45deg)").style("font-size","18px")
+					d3.select("#"+layer+"_info").style("display","block")
+					map.setPaintProperty(layer+"_outline","line-opacity",onOpacity)
+					map.setPaintProperty(layer,"fill-opacity",onOpacity)
 				}
-				d3.select(this).attr("oc","o")
-				d3.select("#"+layer+"_oc").style('transform',"rotate(-45deg)").style("font-size","18px")
-				d3.select("#"+layer+"_info").style("display","block")
-				map.setPaintProperty(layer,"fill-opacity",onOpacity)
-			}
-		})
+			})
 		
 			
 		var intersectionLayers = row.append("div").attr("class","listText")
@@ -459,39 +488,82 @@ function drawList(features,dict,map){
 					.style("margin-left","20px")
 					.attr("id",inter+"_intersections_"+layerName+"_"+formatted[layerName])
 					.html(intersections[inter].length+" "+ layerLabel[inter])	
+					.attr("html",intersections[inter].length+" "+ layerLabel[inter])
 					.style("color","#fff")
 				
 					intersectionLayer.on("click",function(){
 						d3.selectAll(".mapboxgl-marker").remove()
 						
-						d3.selectAll(".subIntersections").style("background-color","#000")
-						d3.select(this).style("background-color","#aaa")
+						//d3.selectAll(".subIntersections").style("background-color","#000")
 						//add remove maker here
-						var clickedLayer = d3.select(this).attr("id").split("_")[0]
+						var clickedLayer = d3.select(this).attr("id").split("_")[0]						
 						var originalLayer = d3.select(this).attr("id").split("_")[2]
 						var originalLayerValue = d3.select(this).attr("id").split("_")[3]
+
+						d3.selectAll(".subIntersections").style("color","#fff").style("font-weight","200")
+						d3.select(this).style("color",colors[clickedLayer]).style("font-weight","700")
 						
 						var currentIntersections = dict[originalLayer+"_"+originalLayerValue][clickedLayer]
-						
-						console.log(clickedLayer)
-						console.log(currentIntersections)
-						console.log(originalLayer)
-						console.log(originalLayerValue)
+												//
+						// console.log(clickedLayer)
+						// console.log(currentIntersections)
+						// console.log(originalLayer)
+						// console.log(originalLayerValue)
 						
 						d3.select("#currentSelectionMap").html(
-							"Your location shares <span style=\"color:"+colors[originalLayer]+"\">"
-							+layerLabel[originalLayer]
-							+" "+originalLayerValue
-							+"</span><br>with<br>"
-							+"<span style=\"color:"+colors[clickedLayer]+"\">"
-							+currentIntersections.length-1
-							+" "+layerLabel[clickedLayer]+"s: "+currentIntersections.join(" ")+"</span>"
+							function(){
+								if(originalLayer=="municipalCourt"){
+									var originalFeature = " <span style=\"color:"+colors[originalLayer]+"; background-color:#000\"> "
+									+"Municipal Court "+boroughDictionary[originalLayerValue.split("X")[0]]+" District "+originalLayerValue.split("X")[1]
+									+"</span>"
+									
+								}else if(originalLayer=="fireCompany"){
+									var originalFeature = " <span style=\"color:"+colors[originalLayer]+"; background-color:#000\"> "
+									+"Fire District "+originalLayerValue.split("X")[0]+" Company "+originalLayerValue.split("X")[1]
+									+"</span>"
+									
+								}else{
+									var originalFeature = " <span style=\"color:"+colors[originalLayer]+"; background-color:#000\"> "
+									+layerLabel[originalLayer]
+									+" "+originalLayerValue
+									+" </span>"
+								}
+								
+								
+								if(clickedLayer=="municipalCourt"){
+									var intersectionList = " <span style=\"color:"+colors[originalLayer]+"; background-color:#000\"> "
+									
+									for(var ci in currentIntersections){
+										var boro = boroughDictionary[currentIntersections[ci].split("X")[0]]
+										var district = currentIntersections[ci].split("X")[1]
+										intersectionList+=" "+boro+" District "+district+","
+									}
+
+									intersectionList = intersectionList.substring(0,intersectionList.length-1)+"</span>"
+									
+								}else if(clickedLayer=="fireCompany"){
+									var intersectionList = " <span style=\"color:"+colors[clickedLayer]+"; background-color:#000\"> "
+									+currentIntersections.length
+									+" Fire Companies: District "+currentIntersections.join(", District ").split("X").join(" Company ")+"</span>"
+									
+								}else{
+									var intersectionList = " <span style=\"color:"+colors[clickedLayer]+"; background-color:#000\"> "
+									+currentIntersections.length
+									+" "+layerLabel[clickedLayer]+"s: "+currentIntersections.join(", ")+"</span>"
+								}
+								
+								
+								
+								
+								return originalFeature+"<br> is shared between <br>"+intersectionList
+							}
+							
 						)
 						
 						//var gids = intersections[clickedLayer]
 						var formattedCI = []
 												//
-						 if(clickedLayer=="neighborhood"|| clickedLayer=="borough"){
+						 if(clickedLayer=="neighborhood"|| clickedLayer=="borough"|| clickedLayer=="fireCompany"|| clickedLayer=="municipalCourt"){
 						 	for(var g in currentIntersections){
 						 		formattedCI.push(currentIntersections[g])
 						 	}
@@ -512,7 +584,7 @@ function drawList(features,dict,map){
 						 
 						var idKey = layerUniqueIds[clickedLayer]
 						var filter = ["in",idKey].concat(formattedCI)
-						map.setPaintProperty(clickedLayer+"_intersect","line-color","#fff")//colors[clickedLayer])
+						map.setPaintProperty(clickedLayer+"_intersect","line-color",colors[clickedLayer])
 						map.setPaintProperty(clickedLayer+"_intersect","line-width",1)
 						map.setLayoutProperty(clickedLayer+"_intersect",'visibility',"visible");//
 						map.setFilter(clickedLayer+"_intersect",filter)
@@ -554,7 +626,7 @@ function filterOnResult(map,features){
 			//console.log([idKey,gid])
  			map.setFilter(layerName,["==",idKey,gid])
  			map.setFilter(layerName+"_outline",["==",idKey,gid])
-   		 	map.setPaintProperty(layerName+"_outline",'line-opacity',1);
+   		 	map.setPaintProperty(layerName+"_outline",'line-opacity',onOpacity);
 			map.setLayoutProperty(layerName,'visibility',"visible");//
 			map.setLayoutProperty(layerName+"_outline",'visibility',"visible");//
 		
