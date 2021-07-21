@@ -216,9 +216,39 @@ function drawMap(newInter){
 
       map.on("load",function(){
 		//  console.log(map.getStyle().layers)
-		  map.on("click",function(e){
-			  var features = map.queryRenderedFeatures(e.point);
-		  		//console.log(features)
+		  
+		  map.on("mousemove",function(e){
+ 				var features = map.queryRenderedFeatures(e.point, {layers:layersHover})
+			  if(features.length==0){
+			  	d3.select("#popup").style("visibility","hidden")
+			  }else{
+			  	d3.select("#popup").style("visibility","visible")
+				  var popupLayers = []
+				  var popupText = "<strong>"+Math.round(e.lngLat.lng*10000)/10000+","+Math.round(e.lngLat.lat*10000)/10000+"</strong><br>"
+				  for(var i in features){
+					 var layerName = features[i].layer.id.split("_")[0]
+					  if(popupLayers.indexOf(layerName)==-1){
+						  popupLayers.push(layerName)
+						  var key = layerUniqueIds[layerName]
+						  var color = colors[layerName]
+						// console.log(layerName)
+						  if(key=="UniqueId"){
+						  	var value = "<strong>"+features[i].properties[key].split("X")[1]+"</strong>"
+				  	
+						  }else{
+						  	var value = "<strong>"+features[i].properties[key]+"</strong>"
+						  }
+						  //console.log([layerName,value])
+						  var text = "<span style=\"color:"+color+"\">"+layerLabel[layerName]+": "+value+"</span><br>"
+						  popupText+=text
+					  }
+				  }
+				  popupText+="<br><i>Click on map for more</i>"
+				  d3.select("#popup").html(popupText).style("left",(e.point.x+280)+"px").style("top",(e.point.y+10)+"px")
+			  }
+			 
+			 // d3.select("#popup").style("left",)
+			  
 		  })
  	 // d3.selectAll(".mapboxgl-ctrl-bottom-right").remove()
 //  	 d3.selectAll(".mapboxgl-ctrl-bottom-left").remove()
