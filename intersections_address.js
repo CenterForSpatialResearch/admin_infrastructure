@@ -39,17 +39,18 @@ var boroughDictionary = {1:"Manhattan",
 		"congressionalDistrict",
 		"stateSenate",
 		"stateAssemblyDistrict",
+		
 		"cityCouncil",
-
+		"municipalCourt",
+		"communityDistrict",//,
+		
 		"policePrecinct",
 		"fireCompany",
-		"schoolDistrict",
+		"schoolDistrict"
 
 		//"neighborhood",
-		"municipalCourt",
-		"communityDistrict"//,
+	
 	]
-	layers.sort()
 	var layersHover = []
 	for(var l in layers){
 		var layer = layers[l]
@@ -100,8 +101,8 @@ var showAll = true
 		// zipcode:"ZIPCODE",
 	 
 		policePrecinct:"#efbe6c",
-		schoolDistrict:"#e7de35",
-		fireCompany:"#dadb7a",
+		schoolDistrict:"#f069a6",
+		fireCompany:"#f36e5b",
 	 
 		congressionalDistrict:"#4ae0ee",
 		stateAssemblyDistrict:"#67e9be",
@@ -109,7 +110,7 @@ var showAll = true
 	 
 		cityCouncil:"#b6e57b",
 		municipalCourt:"#cde45a",		
-		communityDistrict:"#68e957"
+		communityDistrict:"#e7de35"//"#68e957"
 
  }
 var layerSizes = {}
