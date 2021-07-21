@@ -109,7 +109,7 @@ var showAll = true
 		stateSenate:"#89e58d",
 	 
 		cityCouncil:"#b6e57b",
-		municipalCourt:"#cde45a",		
+		municipalCourt:"#e6851f",		
 		communityDistrict:"#e7de35"//"#68e957"
 
  }
@@ -322,7 +322,7 @@ function drawMap(newInter){
 		map.setPaintProperty(layers[i],'fill-color',colors[layers[i]]);
 		map.setPaintProperty(layers[i]+"_outline",'line-color',colors[layers[i]]);		//
 		 map.setLayoutProperty(layers[i]+"_outline",'visibility',"visible");
-		 map.setPaintProperty(layers[i]+"_outline",'line-opacity',.2);
+		 map.setPaintProperty(layers[i]+"_outline",'line-opacity',.1);
 		 map.setPaintProperty(layers[i]+"_outline",'line-width',1);
 		// map.setPaintProperty(layers[i]+"_outline",'line-offset',parseInt(i));
 
