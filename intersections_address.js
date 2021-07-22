@@ -120,7 +120,7 @@ var offOpacity = .05
 //	console.log(window.innerWidth)
 	d3.select("#map").style("width",(window.innerWidth-270)+"px")
 Promise.all([
-			d3.csv("intersections_07202021.csv")])
+			d3.csv("temp.csv")])
  .then(function(data){
 	 //console.log(data)
 	   var map = drawMap(data[0])
