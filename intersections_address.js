@@ -15,6 +15,7 @@ var currentBorough;
 var highlightColor = "#fa6614"
 var clicked = false
 var currentAdmins = {}
+var activeSecondIntersection = null
 // var files = [// "block.geojson",
 //  "cityCouncil.geojson",
 //   "congressionalDistricts.geojson",
@@ -120,7 +121,7 @@ var offOpacity = .05
 //	console.log(window.innerWidth)
 	d3.select("#map").style("width",(window.innerWidth-270)+"px")
 Promise.all([
-			d3.csv("temp.csv")])
+			d3.csv("buffered.csv")])
  .then(function(data){
 	 //console.log(data)
 	   var map = drawMap(data[0])
@@ -465,7 +466,8 @@ function drawList(features,dict,map){
 					return "Municipal Court "+ boroughDictionary[boroCode]+" District "+formatted[layerName].split("X")[1]
 				}
 				if(layerName=="fireCompany"){
-					return "Fire District "+ formatted[layerName].split("X")[0]+" Company "+formatted[layerName].split("X")[1]
+					return "Fire District "+ formatted[layerName].split("X")[0]
+					+" Company "+formatted[layerName].split("X")[1]+"-"+formatted[layerName].split("X")[2]
 					
 				}
 				return layerDisplayName+" "+formatted[layerName]
@@ -492,7 +494,7 @@ function drawList(features,dict,map){
 				var oc = d3.select(this).attr("oc")
 			
 				if(oc=="o"){
-					console.log("close")
+					//console.log("close")
 					d3.select("#currentSelectionMap").html("")
 					d3.select(this).attr("oc","c")
 					d3.select("#"+layer+"_oc").html("+").style('transform',"rotate(0deg)").style("font-size","16px")
@@ -560,6 +562,16 @@ function drawList(features,dict,map){
 					.attr("html",intersections[inter].length+" "+ layerLabel[inter])
 					.style("color","#fff")
 				
+					
+					intersectionLayer.on("mouseover",function(){
+						var clickedLayer = d3.select(this).attr("id").split("_")[0]						
+						var originalLayer = d3.select(this).attr("id").split("_")[2]
+						var originalLayerValue = d3.select(this).attr("id").split("_")[3]
+						
+						// activeSecondIntersection
+						
+					})
+					
 					intersectionLayer.on("click",function(){
 						d3.selectAll(".mapboxgl-marker").remove()
 						
@@ -588,7 +600,8 @@ function drawList(features,dict,map){
 									
 								}else if(originalLayer=="fireCompany"){
 									var originalFeature = " <span style=\"color:"+colors[originalLayer]+"; background-color:#000\"> "
-									+"Fire District "+originalLayerValue.split("X")[0]+" Company "+originalLayerValue.split("X")[1]
+									+"Fire District "+originalLayerValue.split("X")[0]+" Battallion "+originalLayerValue.split("X")[1]
+									+" Co."+originalLayerValue.split("X")[2]
 									+"</span>"
 									
 								}else{
@@ -611,10 +624,20 @@ function drawList(features,dict,map){
 									intersectionList = intersectionList.substring(0,intersectionList.length-1)+"</span>"
 									
 								}else if(clickedLayer=="fireCompany"){
+									// var formattedFireCompanies = ""
+// 									for(var f in currentIntersections){
+// 										var dist = currentIntersections[f].split("X")[0]
+// 										var bat = currentIntersections[f].split("X")[1]
+// 										var co = currentIntersections[f].split("X")[2]
+// 										formattedFireCompanies+="District "+dist+" Battalion "+bat+" Company "+co+","
+// 									}
+// 									if(currentIntersections.length>10){
+// 										formattedFireCompanies="<span style=\"font-size:9px\">"+formattedFireCompanies+"</span>"
+// 									}
+									var formattedFireCompanies = currentIntersections.join(", ").split("X").join("-")
 									var intersectionList = " <span style=\"color:"+colors[clickedLayer]+"; background-color:#000\"> "
 									+currentIntersections.length
-									+" Fire Companies: District "+currentIntersections.join(", District ").split("X").join(" Company ")+"</span>"
-									
+									+" Fire Companies (District-Battalion-Company): <br>"+formattedFireCompanies
 								}else{
 									var intersectionList = " <span style=\"color:"+colors[clickedLayer]+"; background-color:#000\"> "
 									+currentIntersections.length
