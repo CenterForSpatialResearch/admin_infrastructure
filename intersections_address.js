@@ -677,6 +677,7 @@ function drawList(features,dict,map){
 						}
 					 }
 						 
+						 console.log(clickedLayer)
 						var idKey = layerUniqueIds[clickedLayer]
 						var filter = ["in",idKey].concat(formattedCI)
 						map.setPaintProperty(clickedLayer+"_intersect","line-color",colors[clickedLayer])
