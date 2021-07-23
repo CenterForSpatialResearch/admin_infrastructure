@@ -559,7 +559,7 @@ function drawList(features,dict,map){
 							}
 						}
 					)
-					.attr("html",intersections[inter].length+" "+ layerLabel[inter])
+					.attr("html",intersections[inter].length+" "+ layerLabel[inter]+" +")
 					.style("color","#fff")
 				
 					
@@ -574,7 +574,7 @@ function drawList(features,dict,map){
 					
 					intersectionLayer.on("click",function(){
 						d3.selectAll(".mapboxgl-marker").remove()
-						
+						var html  = d3.select(this).attr("html")
 						//d3.selectAll(".subIntersections").style("background-color","#000")
 						//add remove maker here
 						var clickedLayer = d3.select(this).attr("id").split("_")[0]						
@@ -582,8 +582,9 @@ function drawList(features,dict,map){
 						var originalLayerValue = d3.select(this).attr("id").split("_")[3]
 
 						d3.selectAll(".subIntersections").style("color","#fff").style("font-weight","200")
+						.style("text-decoration","underline")
 						d3.select(this).style("color",colors[clickedLayer]).style("font-weight","700")
-						
+						.style("text-decoration","none")
 						var currentIntersections = dict[originalLayer+"_"+originalLayerValue][clickedLayer]
 												//
 						// console.log(clickedLayer)
