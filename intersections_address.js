@@ -245,7 +245,7 @@ function drawMap(newInter){
 						  popupText+=text
 					  }
 				  }
-				  popupText+="<br><i>Click on map for more</i>"
+				  //popupText+="<br><i>Click on map for more</i>"
 				  d3.select("#popup").html(popupText).style("left",(e.point.x+280)+"px").style("top",(e.point.y+10)+"px")
 			  }
 			 
