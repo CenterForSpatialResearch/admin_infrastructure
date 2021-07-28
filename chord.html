@@ -48,6 +48,7 @@ var svg = d3.select("body").append("svg")
     .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")");
 
 d3.json("node_dictionary.json", function(error, imports) {
+
 	console.log(imports)
 	var formatted = []
 	for(var i in imports){

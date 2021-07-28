@@ -5,16 +5,35 @@ var colors = {
 		policePrecinct:"#78b642",
 		stateAssemblyDistrict:"#50b189",
 		stateSenate:"#d24c3c",
-		fireDivision:"#73843b",
+		fireCompany:"#73843b",
 		 // tract:"#688dcd",
 		schoolDistrict:"#cd9c3f",
-		cityCouncil:"#c85782",
-		zipcode:"#7b62cc"
+		cityCouncil:"#c85782"//,
+		//zipcode:"#7b62cc"
+}
+
+var colors = {
+	borough:"#4ff097",
+	neighborhood:"#67e9be",
+	// zipcode:"ZIPCODE",
+ 
+	policePrecinct:"#efbe6c",
+	schoolDistrict:"#f069a6",
+	fireCompany:"#f36e5b",
+ 
+	congressionalDistrict:"#4ae0ee",
+	stateAssemblyDistrict:"#67e9be",
+	stateSenate:"#89e58d",
+ 
+	cityCouncil:"#b6e57b",
+	municipalCourt:"#e6851f",		
+	communityDistrict:"#e7de35"//"#68e957"
+
 }
 
 var layerLabel = {
 	borough:"Borough",
-	zipcode:"Zipcode",
+	//zipcode:"Zipcode",
 	policePrecinct:"Police Precinct",
 	congressionalDistrict:"Congressional District",
 	stateAssemblyDistrict:"State Assemmbly District",
@@ -22,12 +41,12 @@ var layerLabel = {
 	tract:"Census Tract",
 	schoolDistrict:"School District",
 	cityCouncil:"City Council District",
-	fireDivision:"Fire Division"
+	fireCompany:"Fire Company"
 }
 
 var radii = {
-	borough:35,
-	zipcode:10,
+	borough:40,
+	//zipcode:10,
 	policePrecinct:10,
 	congressionalDistrict:10,
 	stateAssemblyDistrict:10,
@@ -35,7 +54,7 @@ var radii = {
 	 tract:10,
 	schoolDistrict:10,
 	cityCouncil:10,
-	fireDivision:10
+	fireCompany:10
 }
 	
 var layersInUse = ["borough","congressionalDistrict"]//,"policePrecinct"]
@@ -46,10 +65,10 @@ width = 1200 - margin.left - margin.right,
 height = 1000 - margin.top - margin.bottom;
 
 
-Promise.all([d3.json("network_notracts.json"),d3.json("node_dictionary.json")])
+Promise.all([d3.json("network_notracts.json"),d3.json("node_dictionary.json"),d3.csv("buffered.csv")])
 .then(function(data){
 	//console.log(data[0])
-	ready(data[0],data[1])
+	ready(data[0],data[1],data[2])
 })
 
 var simulation
@@ -60,18 +79,51 @@ var node
 var all
 var nodeDict
 
-function ready(data,byNode){
+function ready(data,byNode,buffered){
 	 console.log(data)
-// 	console.log(byNode)
-	all = data
-	nodeDict = byNode
+ 	var bNodes = []
+ 	var bLinks = []
+	nodeDict = {}
+	var bNodesArray = []
+	
+ 	for(var b in buffered){
+ 		var row = buffered[b]
+ 		var bSource = row.L1+"_"+row.ID1
+ 		var bTarget = row.L2+"_"+row.ID2
+ 		var bLink = {source:bSource,target:bTarget}
+		bLinks.push(bLink)
+		
+		
+		if(bNodesArray.indexOf(bTarget)==-1){
+			bNodesArray.push(bTarget)
+			bNodes.push({id:bTarget})
+			
+			nodeDict[bTarget]=[]
+		}
+		if(bNodesArray.indexOf(bSource)==-1){
+			bNodesArray.push(bSource)
+			bNodes.push({id:bSource})
+			 nodeDict[bSource]=[]
+		}
+ 	}
+	for(var bl in bLinks){
+		var source = bLinks[bl].source
+		var target = bLinks[bl].target
+		nodeDict[source].push(target)
+		nodeDict[target].push(source)
+	}
+	var bData = {links:bLinks,nodes:bNodes}
+	
+ 	console.log(nodeDict)
+	all = bData
+	//nodeDict = byNode
 	
 	var svg = d3.select("#network").append("svg").attr("width",1000).attr("height",1200)
 	drawKey(svg)
 	//console.log(data)
-	links = filterLinksByLayer(layersInUse,data)
-	nodes = filterNodesByLayer(layersInUse,data)
-	// console.log(nodes)
+	links = filterLinksByLayer(layersInUse,bData)
+	nodes = filterNodesByLayer(layersInUse,bData)
+	 console.log(nodes)
 // 	console.log(links)
 
 	// var a = {id: "a"},
@@ -84,18 +136,25 @@ function ready(data,byNode){
 	
 
 	 simulation = d3.forceSimulation(nodes)
-    .force("charge", d3.forceManyBody().strength(-70))
+    .force("charge", d3.forceManyBody().strength(-400))
    
-      .force("link", d3.forceLink(links).id(d => d.id).distance(30))
+      .force("link", d3.forceLink(links).id(d => d.id).distance(80))
     .force("x", d3.forceX())
     .force("y", d3.forceY())
    .force('collision', d3.forceCollide().radius(function(d) {
-      return 30
-     }))
-    .alphaTarget(1)
-	.alphaDecay(.5)
+      return 20
+     }))	//
+	     .alphaTarget(1)
+	 .alphaDecay(.5)
 	.velocityDecay(.95)
-    .on("tick", ticked);
+   //  .stop();//stop the simulation here
+	 
+	// for (var i = 0; i < 300; ++i) simulation.tick();
+	 
+    simulation.on("tick", draw)
+	 simulation.stop();
+	//draw()
+	
 	
 
 	var g = svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
@@ -173,7 +232,7 @@ function filterLinksByLayer(layerFilter,unfiltered){
 				
 			}
 		}
-		//console.log(["newlinks",newLinks])
+		console.log(["newlinks",newLinks])
 		return newLinks
 }
 	
@@ -220,35 +279,17 @@ function restart() {
 	.attr("id",function(d){
 		return d.id
 	})
-	  .attr("stroke-opacity",.3)
-	  //.attr("stroke","black")
+	  .attr("stroke-opacity",1)
+	  .attr("stroke-width",3)
+	  .attr("stroke","white")
 	  .attr("r", function(d){
 		  var layer = d.id.split("_")[0]
 	  	return radii[layer]
 	  })
-   	.on("mouseover",function(event,d){
-		console.log(d)
-		var x = event.clientX;     // Get the horizontal coordinate
-		var y = event.clientY;     // Get the vertical coordinate
-		var coor = "X coords: " + x + ", Y coords: " + y;
-		d3.select("#popup").html(d.id)
-		.style("left",x+"px")
-		.style("top",y+"px")
-		
-		console.log(nodeDict[d.id])
-		for(var j in nodeDict[d.id]){
-			var id = nodeDict[d.id][j]
-			d3.selectAll("#"+id).attr("fill","red")
-		}
-		
-	})
-	.on("mouseout",function(event,d){
-		d3.select("#popup").html("")
-		d3.selectAll("circle").attr("fill", function(d) { 
-		  var layer = d.id.split("_")[0]
-		  return colors[layer]
-	   })
-	})
+	  .attr("class","nodeGroup")
+	  
+	  
+	  
 	   
     node.append('text')
 		.attr("id",function(d){
@@ -273,6 +314,10 @@ function restart() {
 		  var layer = d.id.split("_")[0]
 	  		return 5//radii[layer]/2
 		})
+		.attr("class","nodeGroup")
+		
+		d3.selectAll(".nodeGroup")
+		.style("cursor","pointer")
 	   	.on("mouseover",function(event,d){
 			console.log(d)
 			var x = event.clientX;     // Get the horizontal coordinate
@@ -285,22 +330,53 @@ function restart() {
 			console.log(nodeDict[d.id.replace("_text","")])
 			for(var j in nodeDict[d.id]){
 				var id = nodeDict[d.id][j]
-				d3.selectAll("#"+id).attr("fill","red")
+				d3.selectAll("#"+id).attr("fill","#aaa")
 			}
 		})
 		.on("mouseout",function(event,d){
-			d3.select("#popup").html("")
+			//d3.select("#popup").html("")
 		  var layer = d.id.split("_")[0]
-		  return colors[layer]
+			
+			
+			for(var j in nodeDict[d.id]){
+				var id = nodeDict[d.id][j]
+				d3.selectAll("#"+id).attr("fill",colors[id.split("_")[0]])
+			}
+			
+		  //return colors[.split("_")[0]]
 		})
 	   
+	   
+	  		//
+		// 	   	.on("mouseover",function(event,d){
+		// 	var x = event.clientX;     // Get the horizontal coordinate
+		// 	var y = event.clientY;     // Get the vertical coordinate
+		// 	var coor = "X coords: " + x + ", Y coords: " + y;
+		// 	d3.select("#popup").html(d.id)
+		// 	.style("left",x+"px")
+		// 	.style("top",y+"px")
+		//
+		// 	for(var j in nodeDict[d.id]){
+		// 		var id = nodeDict[d.id][j]
+		// 		d3.selectAll("#"+id).attr("fill","red")
+		// 	}
+		//
+		// })
+		// .on("mouseout",function(event,d){
+		// 	d3.select("#popup").html("")
+		// 	d3.selectAll("circle").attr("fill", function(d) {
+		// 	  var layer = d.id.split("_")[0]
+		// 	  return colors[layer]
+		//    })
+		// })
+		//
   // Apply the general update pattern to the links.
   link = link.data(links, function(d) { return d.source.id + "-" + d.target.id; });
   link.exit().remove();
   link = link.enter().append("line")
-//  .attr("stroke-opacity",.3)
-  .attr("stroke-width",.5)
-//  .attr("stroke","black")
+  .attr("stroke-opacity",.8)
+  .attr("stroke-width",3)
+  .attr("stroke","white")
   .merge(link);
 
   // Update and restart the simulation.
@@ -321,7 +397,7 @@ function filter(array, filterArray){
 
 
 
-function ticked() {
+function draw() {
     link
         .attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
@@ -341,4 +417,3 @@ function ticked() {
   
 
   
-
