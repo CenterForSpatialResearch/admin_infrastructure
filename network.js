@@ -183,7 +183,7 @@ function drawKey(svg){
 	.attr("class",function(d){return "keytext"})
 	.text(function(d){return layerLabel[d]})
 	.attr("x",function(d,i){return 20})
-	.attr("y",function(d,i){return i*24+180})
+	.attr("y",function(d,i){return i*24+240})
 	.attr("fill",function(d){return colors[d]})
 	.attr("opacity",function(d){
 		if(layersInUse.indexOf(d)==-1){
