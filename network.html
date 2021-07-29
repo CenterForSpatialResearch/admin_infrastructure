@@ -30,9 +30,41 @@ rect {
 #key{
 	font-size:24px;
 }
+#rollover{
+	color:white;
+	position:fixed;
+	right:10px;
+	top:20px;
+	width:400px;
+	border:1px solid white;
+	padding:10px;
+}
 
+		#infoTitle{
+			font-weight:100;
+			font-size:36px;
+			letter-spacing:1px;
+			margin-bottom:20px;
+			color:white;
+			position:absolute;
+/*			filter: drop-shadow(4px 4px 4px rgba(0,0,0,.2));
+			padding:10px;
+*/			
+		}
+		#prompt{
+			font-size:12px;
+			color:white;
+			padding:5px;
+			margin-top:10px;
+			font-style:italic;
+		}
 </style>
 <body>
+	<div id="infoTitle">
+		Administrative<br> Infrastructure<br>Networks
+	<div id="prompt">Choose up to 4 layers to see connections</div>
+	</div>
+	<div id="rollover">CURRENT SELECTION PLACEHOLDER</div>
 	<div id="network"></div>
 	<div id="popup">popup</div>
 	<div id="key">key</div>

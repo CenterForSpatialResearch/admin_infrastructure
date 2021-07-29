@@ -1,25 +1,14 @@
 	//http://bl.ocks.org/tgk/6068367
-var colors = {
-		borough:"#bb7051",
-		congressionalDistrict:"#c163b9",
-		policePrecinct:"#78b642",
-		stateAssemblyDistrict:"#50b189",
-		stateSenate:"#d24c3c",
-		fireCompany:"#73843b",
-		 // tract:"#688dcd",
-		schoolDistrict:"#cd9c3f",
-		cityCouncil:"#c85782"//,
-		//zipcode:"#7b62cc"
-}
+
 
 var colors = {
 	borough:"#4ff097",
-	neighborhood:"#67e9be",
+	//neighborhood:"#67e9be",
 	// zipcode:"ZIPCODE",
  
 	policePrecinct:"#efbe6c",
 	schoolDistrict:"#f069a6",
-	fireCompany:"#f36e5b",
+	//fireCompany:"#f36e5b",
  
 	congressionalDistrict:"#4ae0ee",
 	stateAssemblyDistrict:"#67e9be",
@@ -33,20 +22,24 @@ var colors = {
 
 var layerLabel = {
 	borough:"Borough",
-	//zipcode:"Zipcode",
+	zipcode:"Zipcode",
 	policePrecinct:"Police Precinct",
 	congressionalDistrict:"Congressional District",
-	stateAssemblyDistrict:"State Assemmbly District",
+	stateAssemblyDistrict:"State Assembly District",
 	stateSenate:"State Senate District",
-	tract:"Census Tract",
 	schoolDistrict:"School District",
 	cityCouncil:"City Council District",
-	fireCompany:"Fire Company"
+	//fireCompany:"Fire Company",
+	neighborhood:"Neighborhood",
+	communityDistrict:"Community District",
+	municipalCourt:"Municiple Court District"
 }
+
 
 var radii = {
 	borough:40,
-	//zipcode:10,
+	municipalCourt:10,
+	communityDistrict:10,
 	policePrecinct:10,
 	congressionalDistrict:10,
 	stateAssemblyDistrict:10,
@@ -61,14 +54,14 @@ var layersInUse = ["borough","congressionalDistrict"]//,"policePrecinct"]
 
 var layers = Object.keys(colors)
 var margin = {top: 10, right: 30, bottom: 30, left: 40},
-width = 1200 - margin.left - margin.right,
-height = 1000 - margin.top - margin.bottom;
+width = window.innerWidth - margin.left - margin.right,
+height = window.innerHeight - margin.top - margin.bottom;
 
 
-Promise.all([d3.json("network_notracts.json"),d3.json("node_dictionary.json"),d3.csv("buffered.csv")])
+Promise.all([d3.csv("buffered.csv")])
 .then(function(data){
 	//console.log(data[0])
-	ready(data[0],data[1],data[2])
+	ready(data[0])
 })
 
 var simulation
@@ -79,8 +72,8 @@ var node
 var all
 var nodeDict
 
-function ready(data,byNode,buffered){
-	 console.log(data)
+function ready(buffered){
+	// console.log(data)
  	var bNodes = []
  	var bLinks = []
 	nodeDict = {}
@@ -118,7 +111,7 @@ function ready(data,byNode,buffered){
 	all = bData
 	//nodeDict = byNode
 	
-	var svg = d3.select("#network").append("svg").attr("width",1000).attr("height",1200)
+	var svg = d3.select("#network").append("svg").attr("width",width).attr("height",height)
 	drawKey(svg)
 	//console.log(data)
 	links = filterLinksByLayer(layersInUse,bData)
@@ -136,9 +129,9 @@ function ready(data,byNode,buffered){
 	
 
 	 simulation = d3.forceSimulation(nodes)
-    .force("charge", d3.forceManyBody().strength(-400))
-   
-      .force("link", d3.forceLink(links).id(d => d.id).distance(80))
+    .force("charge", d3.forceManyBody().strength(-200))
+//  .force('center', d3.forceCenter(width / 2, height / 2))
+      .force("link", d3.forceLink(links).id(d => d.id).distance(60))
     .force("x", d3.forceX())
     .force("y", d3.forceY())
    .force('collision', d3.forceCollide().radius(function(d) {
@@ -151,13 +144,17 @@ function ready(data,byNode,buffered){
 	 
 	// for (var i = 0; i < 300; ++i) simulation.tick();
 	 
-    simulation.on("tick", draw)
+    simulation.on("tick", function(){
+	    // nodes[0].x = width / 2;
+	    //    nodes[0].y = height / 2;
+			draw()
+	})
 	 simulation.stop();
 	//draw()
 	
 	
 
-	var g = svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+	var g = svg.append("g")//.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
     link = g.append("g").attr("stroke", "#000").attr("stroke-width", 1.5).selectAll(".link");
     node = g.append("g")
 	.attr("stroke", "#000")
@@ -173,13 +170,18 @@ function ready(data,byNode,buffered){
 function drawKey(svg){
 	var key = svg.append("g").attr("id","key")
 
+	
+	
 	key.selectAll('text')
 	.data(Object.keys(colors))
 	.enter()
 	.append("text")
+	.attr("cursor","pointer")
+	.attr("id",function(d){ return d+"_key"})
+	.attr("class",function(d){"keytext"})
 	.text(function(d){return layerLabel[d]})
-	.attr("x",function(d,i){return 50})
-	.attr("y",function(d,i){return i*24+20})
+	.attr("x",function(d,i){return 20})
+	.attr("y",function(d,i){return i*24+180})
 	.attr("fill",function(d){return colors[d]})
 	.attr("opacity",function(d){
 		if(layersInUse.indexOf(d)==-1){
@@ -191,11 +193,21 @@ function drawKey(svg){
 	.on("click",function(event,d){
 		if(layersInUse.indexOf(d)==-1){
 			layersInUse.push(d)
+			if(layersInUse.length>4){
+				layersInUse.shift()
+			}
+			console.log(layersInUse)
 			d3.select(this).attr("opacity",1)
 			//adding new array for layer
 			links = filterLinksByLayer(layersInUse,all)
 			 nodes = filterNodesByLayer(layersInUse,all)
 			// nodes.concat(newNodes)
+			
+			d3.selectAll(".keyText")
+			.each(
+				console.log(d3.select(this))
+			
+			)
 			
 			restart()
 			
@@ -232,7 +244,7 @@ function filterLinksByLayer(layerFilter,unfiltered){
 				
 			}
 		}
-		console.log(["newlinks",newLinks])
+	//	console.log(["newlinks",newLinks])
 		return newLinks
 }
 	
@@ -277,7 +289,7 @@ function restart() {
 		  return colors[layer]
 	   })
 	.attr("id",function(d){
-		return d.id
+			return d.id.split(" ").join("X")//+"_text"
 	})
 	  .attr("stroke-opacity",1)
 	  .attr("stroke-width",3)
@@ -293,7 +305,7 @@ function restart() {
 	   
     node.append('text')
 		.attr("id",function(d){
-			return d.id+"_text"
+			return d.id.split(" ").join("X")+"_text"
 		})
 		.text(function(d){
 		return d.id.split("_")[1]
@@ -319,58 +331,59 @@ function restart() {
 		d3.selectAll(".nodeGroup")
 		.style("cursor","pointer")
 	   	.on("mouseover",function(event,d){
-			console.log(d)
+			//console.log(d)
 			var x = event.clientX;     // Get the horizontal coordinate
 			var y = event.clientY;     // Get the vertical coordinate
 			var coor = "X coords: " + x + ", Y coords: " + y;
-			d3.select("#popup").html(d.id)
-			.style("left",x+"px")
-			.style("top",y+"px")
+			// d3.select("#popup").html(d.id)
+// 			.style("left",x+"px")
+// 			.style("top",y+"px")
+		//	console.log(d3.select(this).attr("id"))
+		//	console.log("#"+d3.select(this).attr("id").replace("_text",""))
 			
-			console.log(nodeDict[d.id.replace("_text","")])
+//	
+			formatRollover(d.id,nodeDict[d.id])
+			//console.log(nodeDict[d.id.replace("_text","")])
 			for(var j in nodeDict[d.id]){
-				var id = nodeDict[d.id][j]
-				d3.selectAll("#"+id).attr("fill","#aaa")
+				var id = nodeDict[d.id][j].split(" ").join("X")
+				var layer = id.split("_")[0]
+			
+				d3.selectAll("#"+id).attr("fill","white")
+				d3.selectAll("#"+id+"_text").attr("fill",colors[layer])
+				
 			}
+			var thisId = d3.select(this).attr("id").replace("_text","")
+			var thisLayer = thisId.split("_")[0]
+			d3.selectAll("#"+thisId).attr("fill","white")
+			
+			d3.selectAll("#"+thisId+"_text")
+			.attr("fill",colors[thisLayer])
+			
 		})
 		.on("mouseout",function(event,d){
+			d3.select("#rollover").html("")
 			//d3.select("#popup").html("")
 		  var layer = d.id.split("_")[0]
+			d3.selectAll("#"+d3.select(this).attr("id").replace("_text","")).attr("fill",colors[layer])
 			
 			
 			for(var j in nodeDict[d.id]){
-				var id = nodeDict[d.id][j]
+				var id =  nodeDict[d.id][j].split(" ").join("X")
 				d3.selectAll("#"+id).attr("fill",colors[id.split("_")[0]])
+				d3.selectAll("#"+id+"_text").attr("fill","black")
 			}
+			
+			var thisId = d3.select(this).attr("id").replace("_text","")
+			var thisLayer = thisId.split("_")[0]
+			d3.selectAll("#"+thisId).attr("fill",colors[thisLayer])
+			
+			d3.selectAll("#"+thisId+"_text")
+			.attr("fill","black")
 			
 		  //return colors[.split("_")[0]]
 		})
 	   
 	   
-	  		//
-		// 	   	.on("mouseover",function(event,d){
-		// 	var x = event.clientX;     // Get the horizontal coordinate
-		// 	var y = event.clientY;     // Get the vertical coordinate
-		// 	var coor = "X coords: " + x + ", Y coords: " + y;
-		// 	d3.select("#popup").html(d.id)
-		// 	.style("left",x+"px")
-		// 	.style("top",y+"px")
-		//
-		// 	for(var j in nodeDict[d.id]){
-		// 		var id = nodeDict[d.id][j]
-		// 		d3.selectAll("#"+id).attr("fill","red")
-		// 	}
-		//
-		// })
-		// .on("mouseout",function(event,d){
-		// 	d3.select("#popup").html("")
-		// 	d3.selectAll("circle").attr("fill", function(d) {
-		// 	  var layer = d.id.split("_")[0]
-		// 	  return colors[layer]
-		//    })
-		// })
-		//
-  // Apply the general update pattern to the links.
   link = link.data(links, function(d) { return d.source.id + "-" + d.target.id; });
   link.exit().remove();
   link = link.enter().append("line")
@@ -385,6 +398,36 @@ function restart() {
   simulation.alpha(1).restart();
 }
 	
+function formatRollover(thisId,links){
+	var thisLayer = layerLabel[thisId.split("_")[0]]
+	var thisName = thisId.split("_")[1]
+	var linksText = formatRolloverLinks(links)
+	d3.select("#rollover").html("<span style=\"color:"+colors[thisId.split("_")[0]]+"; background-color:#000\">"+thisLayer+" "+thisName+"</span> intersects with: <br>"+linksText)
+}
+
+function formatRolloverLinks(links){
+	var formatted = {}
+	for(var i in links){
+		var link = links[i]
+		var gid = link.split("_")[1]
+		var layer = link.split("_")[0]
+		if(layersInUse.indexOf(layer)>-1){
+			if(Object.keys(formatted).indexOf(layer)==-1){
+				formatted[layer]=[]
+				formatted[layer].push(gid)
+			}else{
+				formatted[layer].push(gid)
+			}
+		}
+	}
+	console.log(formatted)
+	var displayText = ""
+	for(var f in formatted){
+		displayText+="<span style=\"color:"+colors[f]+"; background-color:#000\">"+layerLabel[f]+": "+formatted[f].join(", ")+"</span><br>"
+	}
+	return displayText
+//	return formatted
+}
 
 function filter(array, filterArray){
 	
@@ -398,17 +441,21 @@ function filter(array, filterArray){
 
 
 function draw() {
-    link
-        .attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
+var p = 50
+node
+	.attr("transform",
+	function(d){
+		 var dx = Math.max(p, Math.min(width - p, d.x+width/2));
+ 		var dy =  Math.max(p, Math.min(height - p, d.y+height/2))
+		return "translate("+dx+","+dy+")"
+	})
 
-    node
-		.attr("transform",
-		function(d){
-			return "translate("+d.x+","+d.y+")"
-		})
+    link
+        .attr("x1", function(d) { return Math.max(p, Math.min(width - p, d.source.x+width/2));  })
+		.attr("y1", function(d) { return Math.max(p, Math.min(width - p, d.source.y+height/2));})
+        .attr("x2", function(d) { return Math.max(p, Math.min(width - p, d.target.x+width/2));})
+        .attr("y2", function(d) { return Math.max(p, Math.min(width - p, d.target.y+height/2));});
+
          // .attr("cx", function (d) { return d.x; })
 //          .attr("cy", function(d) { return d.y; });
   }
