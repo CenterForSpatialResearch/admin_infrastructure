@@ -72,6 +72,8 @@ var node
 var all
 var nodeDict
 
+var strokeWidth = 2
+
 function ready(buffered){
 	// console.log(data)
  	var bNodes = []
@@ -107,7 +109,7 @@ function ready(buffered){
 	}
 	var bData = {links:bLinks,nodes:bNodes}
 	
- 	console.log(nodeDict)
+ //	console.log(nodeDict)
 	all = bData
 	//nodeDict = byNode
 	
@@ -116,7 +118,7 @@ function ready(buffered){
 	//console.log(data)
 	links = filterLinksByLayer(layersInUse,bData)
 	nodes = filterNodesByLayer(layersInUse,bData)
-	 console.log(nodes)
+	// console.log(nodes)
 // 	console.log(links)
 
 	// var a = {id: "a"},
@@ -177,7 +179,8 @@ function drawKey(svg){
 	.append("text")
 	.attr("cursor","pointer")
 	.attr("id",function(d){ return d+"_key"})
-	.attr("class",function(d){"keytext"})
+	.style("font-size","16px")
+	.attr("class",function(d){return "keytext"})
 	.text(function(d){return layerLabel[d]})
 	.attr("x",function(d,i){return 20})
 	.attr("y",function(d,i){return i*24+180})
@@ -192,19 +195,25 @@ function drawKey(svg){
 	.on("click",function(event,d){
 		if(layersInUse.indexOf(d)==-1){
 			layersInUse.push(d)
-			if(layersInUse.length>4){
+			if(layersInUse.length>3){
 				layersInUse.shift()
 			}
-			console.log(layersInUse)
+			//console.log(layersInUse)
 			d3.select(this).attr("opacity",1)
 			//adding new array for layer
 			links = filterLinksByLayer(layersInUse,all)
 			 nodes = filterNodesByLayer(layersInUse,all)
 			// nodes.concat(newNodes)
 			
-			d3.selectAll(".keyText")
+			//console.log(d3.selectAll(".keytext"))
+			d3.selectAll(".keytext")
 			.each(
-				console.log(d3.select(this))
+				function(d,i){
+					var tempL = d3.select(this).attr("id").split("_")[0]
+					if(layersInUse.indexOf(tempL)==-1){
+						d3.select(this).attr("opacity",.3)
+					}
+				}
 			
 			)
 			
@@ -279,7 +288,7 @@ function restart() {
   .attr("class","node")
   .merge(node);
   
-  
+  var strokeColor = "#fff"
  
  // node.call(d3.drag().on("drag", dragged));
 
@@ -292,8 +301,8 @@ function restart() {
 			return d.id.split(" ").join("X")//+"_text"
 	})
 	  .attr("stroke-opacity",1)
-	  .attr("stroke-width",3)
-	  .attr("stroke","white")
+	  .attr("stroke-width",strokeWidth)
+	  .attr("stroke",strokeColor)
 	  .attr("r", function(d){
 		  var layer = d.id.split("_")[0]
 	  	return radii[layer]
@@ -342,8 +351,10 @@ function restart() {
 		//	console.log("#"+d3.select(this).attr("id").replace("_text",""))
 			
 //	
+			d3.selectAll("circle").attr("stroke","#444").attr("fill","#444")
+			d3.selectAll("line").attr("stroke","#fff").attr("opacity",.1)
 			var rolloverColor = "#888"
-			var rolloverBorder = "#888"
+			var rolloverBorder = "#fff"
 			formatRollover(d.id,nodeDict[d.id])
 			
 			//console.log(nodeDict[d.id.replace("_text","")])
@@ -351,24 +362,32 @@ function restart() {
 				var id = nodeDict[d.id][j].split(" ").join("X")
 				var layer = id.split("_")[0]
 			
-				d3.selectAll("#"+id).attr("fill", rolloverColor ).attr("stroke", rolloverBorder)
-				d3.selectAll("#"+id+"_text").attr("fill",colors[layer])
+				d3.selectAll("#"+id).attr("stroke", rolloverBorder).attr("fill",colors[layer])// .attr("fill", rolloverColor )
+				d3.selectAll("#"+id+"_text")//.attr("fill",colors[layer])
 				
 			}
 			var thisId = d3.select(this).attr("id").replace("_text","")
 			var thisLayer = thisId.split("_")[0]
-			d3.selectAll("#"+thisId).attr("fill", rolloverColor ).attr("stroke", rolloverBorder)
+			d3.selectAll("#"+thisId).attr("stroke", rolloverBorder).attr("fill",colors[thisLayer])//.attr("fill", rolloverColor)
 			
-			d3.selectAll("."+thisId+"_link").attr("stroke", rolloverBorder)
-			
-			d3.selectAll("#"+thisId+"_text")
-			.attr("fill",colors[thisLayer])
+			d3.selectAll("."+thisId+"_link").attr("stroke", rolloverBorder).attr("opacity",1)
+						//
+			// d3.selectAll("#"+thisId+"_text")
+			// .attr("fill",colors[thisLayer])
 			
 		})
 		.on("mouseout",function(event,d){
-			d3.select("#rollover").html("")
+
+			d3.selectAll("circle").attr("stroke","#fff")
+			.each(function(d){
+				d3.select(this).attr("fill",colors[ d3.select(this).attr("id").split("_")[0]])
+				//var l = d3.select(this).attr("id").split("_")[0]
+				
+			})
+			d3.selectAll("line").attr("stroke","#fff").attr("opacity",1)
+			d3.select("#rollover").html("Hover on circles to see detail for parts of graph")
 			//d3.select("#popup").html("")
-		  var layer = d.id.split("_")[0]
+			 var layer = d.id.split("_")[0]
 			d3.selectAll("#"+d3.select(this).attr("id").replace("_text","")).attr("fill",colors[layer])
 			
 			
@@ -394,8 +413,8 @@ function restart() {
   link.exit().remove();
   link = link.enter().append("line")
   .attr("stroke-opacity",.8)
-  .attr("stroke-width",3)
-  .attr("stroke","white")
+  .attr("stroke-width",strokeWidth)
+  .attr("stroke",strokeColor)
   .attr("class",function(d){
 	  if(d.source.id!=undefined){
 	  	return d.source.id.split(" ").join("X")+"_link"+" "+d.target.id.split(" ").join("X")+"_link"
@@ -404,7 +423,7 @@ function restart() {
 	  }
   })
 .on("mouseover",function(e,d){
-	console.log(d)
+	//console.log(d)
 })
   .merge(link);
 

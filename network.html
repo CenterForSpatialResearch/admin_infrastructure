@@ -23,6 +23,7 @@ rect {
 .link {
   stroke: #fff;
 }
+.keytext{font-size:10px;}
 #popup{
 	z-index:999;
 	position:absolute;
@@ -35,9 +36,12 @@ rect {
 	position:fixed;
 	right:10px;
 	top:20px;
-	width:400px;
-	border:1px solid white;
+	width:200px;
 	padding:10px;
+	font-style:italic;
+	font-size:12px;
+	letter-spacing:1px;
+	
 }
 
 		#infoTitle{
@@ -62,9 +66,9 @@ rect {
 <body>
 	<div id="infoTitle">
 		Administrative<br> Infrastructure<br>Networks
-	<div id="prompt">Choose up to 4 layers to see connections</div>
+	<div id="prompt">Choose up to 3 layers from below</div>
 	</div>
-	<div id="rollover">CURRENT SELECTION PLACEHOLDER</div>
+	<div id="rollover">Hover on circles to see detail for parts of graph</div>
 	<div id="network"></div>
 	<div id="popup">popup</div>
 	<div id="key">key</div>
