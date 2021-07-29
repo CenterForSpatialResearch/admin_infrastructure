@@ -151,11 +151,10 @@ function ready(buffered){
 	})
 	 simulation.stop();
 	//draw()
-	
-	
 
 	var g = svg.append("g")//.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-    link = g.append("g").attr("stroke", "#000").attr("stroke-width", 1.5).selectAll(".link");
+    link = g.append("g").attr("stroke", "#000").attr("stroke-width", 1.5).selectAll(".link")
+	
     node = g.append("g")
 	.attr("stroke", "#000")
 	.attr("stroke-width", 1.5)
@@ -282,7 +281,8 @@ function restart() {
   
   
  
-  
+ // node.call(d3.drag().on("drag", dragged));
+
   node.append("circle")
 	  .attr("fill", function(d) { 
 		  var layer = d.id.split("_")[0]
@@ -308,7 +308,7 @@ function restart() {
 			return d.id.split(" ").join("X")+"_text"
 		})
 		.text(function(d){
-		return d.id.split("_")[1]
+		return d.id.split("_")[1].split("X").join("-")
 		})
 		.attr("font-size","11px")
 		.attr("fill", function(d) { 
@@ -342,19 +342,24 @@ function restart() {
 		//	console.log("#"+d3.select(this).attr("id").replace("_text",""))
 			
 //	
+			var rolloverColor = "#888"
+			var rolloverBorder = "#888"
 			formatRollover(d.id,nodeDict[d.id])
+			
 			//console.log(nodeDict[d.id.replace("_text","")])
 			for(var j in nodeDict[d.id]){
 				var id = nodeDict[d.id][j].split(" ").join("X")
 				var layer = id.split("_")[0]
 			
-				d3.selectAll("#"+id).attr("fill","white")
+				d3.selectAll("#"+id).attr("fill", rolloverColor ).attr("stroke", rolloverBorder)
 				d3.selectAll("#"+id+"_text").attr("fill",colors[layer])
 				
 			}
 			var thisId = d3.select(this).attr("id").replace("_text","")
 			var thisLayer = thisId.split("_")[0]
-			d3.selectAll("#"+thisId).attr("fill","white")
+			d3.selectAll("#"+thisId).attr("fill", rolloverColor ).attr("stroke", rolloverBorder)
+			
+			d3.selectAll("."+thisId+"_link").attr("stroke", rolloverBorder)
 			
 			d3.selectAll("#"+thisId+"_text")
 			.attr("fill",colors[thisLayer])
@@ -369,13 +374,14 @@ function restart() {
 			
 			for(var j in nodeDict[d.id]){
 				var id =  nodeDict[d.id][j].split(" ").join("X")
-				d3.selectAll("#"+id).attr("fill",colors[id.split("_")[0]])
+				d3.selectAll("#"+id).attr("fill",colors[id.split("_")[0]]).attr("stroke","#fff")
 				d3.selectAll("#"+id+"_text").attr("fill","black")
 			}
 			
 			var thisId = d3.select(this).attr("id").replace("_text","")
 			var thisLayer = thisId.split("_")[0]
-			d3.selectAll("#"+thisId).attr("fill",colors[thisLayer])
+			d3.selectAll("#"+thisId).attr("fill",colors[thisLayer]).attr("stroke","#fff")
+			d3.selectAll("."+thisId+"_link").attr("stroke","white")
 			
 			d3.selectAll("#"+thisId+"_text")
 			.attr("fill","black")
@@ -390,6 +396,16 @@ function restart() {
   .attr("stroke-opacity",.8)
   .attr("stroke-width",3)
   .attr("stroke","white")
+  .attr("class",function(d){
+	  if(d.source.id!=undefined){
+	  	return d.source.id.split(" ").join("X")+"_link"+" "+d.target.id.split(" ").join("X")+"_link"
+	  }else{
+  		  return d.source.split(" ").join("X")+"_link"+" "+d.target.split(" ").join("X")+"_link"
+	  }
+  })
+.on("mouseover",function(e,d){
+	console.log(d)
+})
   .merge(link);
 
   // Update and restart the simulation.
@@ -420,10 +436,10 @@ function formatRolloverLinks(links){
 			}
 		}
 	}
-	console.log(formatted)
+	//console.log(formatted)
 	var displayText = ""
 	for(var f in formatted){
-		displayText+="<span style=\"color:"+colors[f]+"; background-color:#000\">"+layerLabel[f]+": "+formatted[f].join(", ")+"</span><br>"
+		displayText+="<span style=\"color:"+colors[f]+"; background-color:#000\">"+layerLabel[f]+": "+formatted[f].join(", ").split("X").join("-")+"</span><br>"
 	}
 	return displayText
 //	return formatted
