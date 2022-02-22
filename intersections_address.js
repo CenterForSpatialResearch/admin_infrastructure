@@ -36,7 +36,7 @@ var boroughDictionary = {1:"Manhattan",
 	var root = "geoData/"
 	var layers = [
 		"borough",
-		//"zipcode",
+		"zipcode",
 		"congressionalDistrict",
 		"stateSenate",
 		"stateAssemblyDistrict",
@@ -99,7 +99,7 @@ var showAll = true
  var colors = {
 		borough:"#4ff097",
 		neighborhood:"#67e9be",
-		// zipcode:"ZIPCODE",
+		zipcode:"gold",
 	 
 		policePrecinct:"#efbe6c",
 		schoolDistrict:"#f069a6",
@@ -199,6 +199,8 @@ function drawMap(newInter){
     map = new mapboxgl.Map({
 		container: 'map',
 		style:"mapbox://styles/jjjiia123/ckr5q89fg07qb17tjzrng0lxs",// ,//newest
+		
+		
 		// style:"mapbox://styles/jjjiia123/ckoeh9hz9413117qhmh6w4mza",
 		zoom: 10,
 		preserveDrawingBuffer: true,
@@ -658,7 +660,7 @@ function drawList(features,dict,map){
 						//var gids = intersections[clickedLayer]
 						var formattedCI = []
 												//
-						 if(clickedLayer=="neighborhood"|| clickedLayer=="borough"|| clickedLayer=="fireCompany"|| clickedLayer=="municipalCourt"){
+						 if(clickedLayer=="neighborhood"|| clickedLayer=="borough"|| clickedLayer=="fireCompany"|| clickedLayer=="municipalCourt" || clickedLayer=="zipcode"){
 						 	for(var g in currentIntersections){
 						 		formattedCI.push(currentIntersections[g])
 						 	}
@@ -677,8 +679,9 @@ function drawList(features,dict,map){
 						}
 					 }
 						 
-						 console.log(clickedLayer)
+						// console.log(clickedLayer)
 						var idKey = layerUniqueIds[clickedLayer]
+					// console.log(formattedCI)
 						var filter = ["in",idKey].concat(formattedCI)
 						map.setPaintProperty(clickedLayer+"_intersect","line-color",colors[clickedLayer])
 						map.setPaintProperty(clickedLayer+"_intersect","line-width",1)
