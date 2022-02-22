@@ -194,7 +194,7 @@ function drawMap(newInter){
 	}
 }
 //	console.log(dict)
-
+var maxBounds = [[-74.3, 40.5],[-73.5, 41]]
     mapboxgl.accessToken = "pk.eyJ1IjoiampqaWlhMTIzIiwiYSI6ImNpbDQ0Z2s1OTN1N3R1eWtzNTVrd29lMDIifQ.gSWjNbBSpIFzDXU2X5YCiQ"
     map = new mapboxgl.Map({
 		container: 'map',
@@ -204,9 +204,9 @@ function drawMap(newInter){
 		// style:"mapbox://styles/jjjiia123/ckoeh9hz9413117qhmh6w4mza",
 		zoom: 10,
 		preserveDrawingBuffer: true,
-		minZoom:9,
-		maxZoom:15,// ,
-		// maxBounds: maxBounds
+		minZoom:10,
+		maxZoom:14,// ,
+		 maxBounds: maxBounds,
 		center: [-73.95,40.71]
      });	 //
 	 // map.on("mousemove",layers[0],function(d){
